@@ -1,0 +1,19 @@
+name: Idee
+description: Vorschlag für eine neue Funktion oder Verbesserung
+labels: [idee]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem soll gelöst werden?
+      description: Beschreib die Situation unterwegs oder beim Planen.
+    validations:
+      required: true
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Wie könnte es aussehen?
+  - type: textarea
+    id: alternativen
+    attributes:
+      label: Andere Lösungen, die du dir überlegt hast

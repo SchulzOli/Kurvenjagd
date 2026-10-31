@@ -1,0 +1,13 @@
+{
+  "hinweis": "BEISPIEL für die Entwicklung. Auf dem Datenspeicher monatlich von Hand pflegen.",
+  "monat": "2026-11",
+  "ziel": 15,
+  "eingegangen": 6,
+  "kosten": [["Apple-Entwicklerkonto (99 $/Jahr)", 7.5], ["Domain", 1.5], ["Datenspeicher", 0], ["Rücklage und Gebühren", 5]],
+  "links": {
+    "liberapay": "https://liberapay.com/BEISPIEL",
+    "github": "",
+    "iban": "DE00 0000 0000 0000 0000 00 (Beispiel)",
+    "inhaber": "Max Beispiel"
+  }
+}

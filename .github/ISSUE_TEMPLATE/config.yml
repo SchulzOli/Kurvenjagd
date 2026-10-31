@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Falsche Straße oder fehlende Angabe in der Karte
+    url: https://www.openstreetmap.org/fixthemap
+    about: Kartenfehler am besten direkt in OpenStreetMap korrigieren – das hilft allen Apps.
+  - name: Sicherheitslücke
+    url: https://github.com/SchulzOli/Kurvenjagd/security/advisories/new
+    about: Bitte vertraulich melden, nicht als öffentliches Issue.

@@ -1,0 +1,27 @@
+# Abhängigkeiten und Build-Ergebnisse
+node_modules/
+www/build/
+dist/
+android/app/build/
+android/.gradle/
+ios/App/build/
+
+# Lokale Testdaten (python scripts/build_data.py, node scripts/build-map.mjs) und Werkzeuge
+data/
+tools/
+*.osm.pbf
+
+# Lokale Einstellungen und Signaturschlüssel – nie einchecken
+android/local.properties
+*.keystore
+*.jks
+.env
+.env.*
+
+# Editor, System, Agent-Werkzeuge
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+__pycache__/

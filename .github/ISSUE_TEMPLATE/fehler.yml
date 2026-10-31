@@ -1,0 +1,34 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet
+labels: [fehler]
+body:
+  - type: textarea
+    id: was
+    attributes:
+      label: Was ist passiert?
+      description: Was hast du gemacht, was hast du erwartet, was kam stattdessen?
+    validations:
+      required: true
+  - type: dropdown
+    id: plattform
+    attributes:
+      label: Plattform
+      options: [Android, iOS, Web-App / Browser]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App-Version und Gerät
+      placeholder: z. B. 0.1.0, Pixel 7, Android 16
+  - type: textarea
+    id: route
+    attributes:
+      label: Route (falls es um eine Route geht)
+      description: Start, Ziel, Stopps und Einstellungen (Kurvenlust, Umweg) oder GPX-Datei anhängen.
+  - type: textarea
+    id: diagnose
+    attributes:
+      label: Diagnose aus der Boxengasse
+      description: 7× auf das Logo tippen → Boxengasse → System → „Diagnose kopieren“ und hier einfügen.
+      render: text

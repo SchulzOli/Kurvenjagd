@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Kurvenjäger</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="build/app.css">
+<style>
+  /* Design „Schwebendes Cockpit“ in Schwarz-Rot: dunkel, hoher Kontrast, große Tasten, alles schwebt über der Karte.
+     --accent füllt Flächen (weiße Schrift darauf), --accent-fg ist das hellere Rot für Schrift und Linien auf Schwarz. */
+  :root { --bg:#0a0a0b; --card:#141416; --card2:#1e1e21; --fg:#f5f5f5; --muted:#a6a6ac; --line:#35353b;
+          --accent:#e5252a; --accent-fg:#ff4d50; --accent-tint:#e5252a26; --on-accent:#ffffff;
+          --ok:#3ddc84; --warn:#ffd23f; --err:#ff8a9a;
+          --c-start:#3ddc84; --c-via:#b9a6ff; --c-end:#e5252a;
+          --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); --gap: 10px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  #map { position: fixed; inset: 0; background: #1d1f22; }
+  .leaflet-control-attribution { background: #000a !important; color: var(--muted) !important; font-size: 10px; }
+  .leaflet-control-attribution a { color: var(--muted) !important; }
+  .leaflet-tooltip { background: var(--card); color: var(--fg); border: 1px solid var(--line); }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--card); color: var(--fg); }
+
+  .float { position: fixed; z-index: 1000; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 6px 24px #000a; }
+  button { font: inherit; color: var(--fg); background: var(--card2); border: 1px solid var(--line); border-radius: 14px; min-height: 48px; padding: 0 16px; cursor: pointer; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.big { min-height: 60px; font-size: 18px; font-weight: 600; flex: 1; }
+  button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  button.icon { width: 52px; min-width: 52px; padding: 0; display: grid; place-items: center; }
+  button svg { width: 26px; height: 26px; }
+  input[type=search], input[type=text] { font: inherit; color: var(--fg); background: transparent; border: 0; outline: 0; min-width: 0; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 32px; }
+  label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 2px; }
+  label b { float: right; color: var(--fg); }
+  .check { display: flex; gap: 12px; align-items: center; color: var(--fg); font-size: 15px; min-height: 44px; }
+  .check input { width: 24px; height: 24px; accent-color: var(--accent); }
+  .pin { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 14px; color: #111; border: 2px solid #111; box-shadow: 0 1px 6px #000c; }
+  [data-mode] { display: none !important; }
+  body[data-active=ab] [data-mode~=ab], body[data-active=loop] [data-mode~=loop] { display: revert !important; }
+  body[data-view=plan] .ride, body[data-view=ride] .plan { display: none !important; }
+
+  /* ---------- Planung ---------- */
+  #topbar { top: calc(var(--gap) + var(--sat)); left: var(--gap); right: var(--gap); display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 16px; }
+  #topbar input { flex: 1; font-size: 17px; height: 44px; }
+  #topbar button.icon { min-height: 44px; width: 44px; min-width: 44px; border-radius: 12px; }
+  #sheet { left: var(--gap); right: var(--gap); bottom: calc(var(--gap) + var(--sab)); max-height: 64%; display: flex; flex-direction: column; overflow: hidden; }
+  #sheetHandle { display: flex; align-items: center; gap: 10px; padding: 8px 14px 4px; cursor: pointer; user-select: none; }
+  #sheetHandle::before { content: ''; position: absolute; left: 50%; top: 6px; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: var(--line); }
+  #sheetHandle h1 { margin: 6px 0 0; font-size: 18px; flex: 1; white-space: nowrap; }
+  #sheetHandle h1 span { color: var(--accent-fg); }
+  #sheetHandle h1 .mark { width: 22px; height: 22px; vertical-align: -4px; margin-right: 6px; }
+  #summary { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  #toggle { min-height: 36px; width: 36px; padding: 0; margin-top: 6px; }
+  .sbody { overflow-y: auto; padding: 0 14px; -webkit-overflow-scrolling: touch; }
+  #sheet.collapsed .sbody { display: none; }
+  .sfoot { padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); }
+  #steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 13px; }
+  #steps li { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  #steps li.done { color: var(--ok); border-color: #3ddc8466; }
+  #steps li.done::before { content: '✓ '; }
+  #steps li.now { color: var(--on-accent); background: var(--accent); border-color: var(--accent); font-weight: 700; }
+  #steps li.opt { border-style: dashed; }
+  #readyHint { margin: 0; font-size: 14px; color: var(--muted); }
+  #readyHint.ok { color: var(--ok); } #readyHint.warn { color: var(--warn); } #readyHint.err { color: var(--err); }
+  .actions { display: flex; gap: 8px; }
+  #go.busy::before { content: ''; display: inline-block; width: 16px; height: 16px; margin-right: 10px; vertical-align: -2px; border: 3px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+  #go.attention, #ride.attention { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px #e5252a55; } }
+  .seg { display: flex; background: var(--card2); border: 1px solid var(--line); border-radius: 14px; padding: 3px; margin: 8px 0; }
+  .seg button { flex: 1; border: 0; background: transparent; min-height: 42px; border-radius: 11px; }
+  .seg button.on { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+
+  /* Etappen-Zeitleiste */
+  #stops { list-style: none; margin: 4px 0 8px; padding: 0; }
+  #stops li.pt { display: flex; align-items: center; gap: 10px; min-height: 52px; background: var(--card); position: relative; transition: transform .15s ease; }
+  #stops li.pt.dragging { transition: none; z-index: 2; background: var(--card2); border-radius: 12px; box-shadow: 0 6px 20px #000c; }
+  #stops .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; }
+  #stops .nm small { display: block; font-size: 12px; color: var(--muted); }
+  #stops .nm i { color: var(--muted); }
+  #stops li.pt button { min-height: 40px; width: 40px; padding: 0; font-size: 18px; }
+  #stops li.leg { margin-left: 13px; padding: 2px 0 2px 22px; border-left: 3px solid var(--line); color: var(--muted); font-size: 13px; min-height: 18px; }
+  #stops li.leg.has { border-left-color: var(--accent); }
+  #stops li.addhint { color: var(--muted); font-size: 13px; padding-top: 6px; }
+  .grip { touch-action: none; cursor: grab; user-select: none; color: var(--muted); font-size: 22px; padding: 8px 2px; line-height: 1; }
+  .dragging .grip { cursor: grabbing; color: var(--accent-fg); }
+  .pin.sm { width: 26px; height: 26px; font-size: 13px; flex-shrink: 0; box-shadow: none; }
+
+  details { border-top: 1px solid var(--line); margin-top: 6px; padding: 6px 0 12px; }
+  summary { min-height: 44px; display: flex; align-items: center; color: var(--muted); cursor: pointer; font-size: 15px; }
+  .row { margin: 10px 0; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  #status { font-size: 13px; color: var(--muted); }
+  #status.err { color: var(--err); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 5px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; color: var(--muted); }
+  #stats.stale, #summary.stale { opacity: .45; }
+  .legend { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .legend .bar { flex: 1; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #4f7bd9, #2ec27e, #f5c211, #ff7a1a, #e01b24); }
+  .foot { color: var(--muted); font-size: 11px; }
+  .popdel { min-height: 40px; background: #e01b24; color: #fff; border: 0; border-radius: 10px; padding: 6px 14px; }
+
+  @media (min-width: 760px) {
+    #topbar { right: auto; width: 420px; }
+    #sheet { right: auto; width: 420px; top: calc(72px + var(--sat)); bottom: auto; max-height: calc(100% - 72px - 2 * var(--gap) - var(--sat)); }
+  }
+
+  /* ---------- Fahrt ---------- */
+  #rideTop { top: calc(var(--gap) + var(--sat)); left: var(--gap); right: var(--gap); padding: 14px 16px; }
+  .man { display: flex; align-items: center; gap: 14px; }
+  #manArrow { width: 64px; height: 64px; flex-shrink: 0; color: var(--accent-fg); }
+  #manArrow svg { width: 100%; height: 100%; }
+  #manDist { font-size: 44px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  #manText { font-size: 17px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #manNext { display: flex; gap: 16px; border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; color: var(--muted); font-size: 16px; }
+  #manNext:empty { display: none; }
+  #manNext span { display: flex; align-items: center; gap: 6px; }
+  #manNext svg { width: 24px; height: 24px; }
+  #rideInfo { left: 50%; transform: translateX(-50%); bottom: calc(118px + var(--sab)); padding: 8px 16px; border-radius: 999px; font-size: 15px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  #recenter { right: var(--gap); bottom: calc(170px + var(--sab)); border-radius: 999px; }
+  #rideBar { position: fixed; z-index: 1000; left: var(--gap); right: var(--gap); bottom: calc(var(--gap) + var(--sab)); display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; }
+  #rideBar button { pointer-events: auto; border-radius: 50%; padding: 0; display: grid; place-items: center; box-shadow: 0 6px 20px #000a; background: var(--card); }
+  #rideBar .side { width: 68px; height: 68px; }
+  #rideBar #mic { width: 92px; height: 92px; background: var(--accent); color: var(--on-accent); border: 0; }
+  #rideBar #mic svg { width: 40px; height: 40px; }
+  #mic.listening { animation: pulse 1s ease-in-out infinite; }
+  #quick, #voice { left: var(--gap); right: var(--gap); bottom: calc(118px + var(--sab)); padding: 14px; }
+  #quick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  #quick button { min-height: 72px; font-size: 17px; font-weight: 600; }
+  #voiceState { margin: 0 0 10px; font-size: 18px; font-weight: 600; }
+  #voiceForm { display: flex; gap: 8px; }
+  #voiceForm input { flex: 1; background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; height: 52px; font-size: 17px; }
+  #voiceHelp { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+  #toast { left: 50%; transform: translateX(-50%); top: calc(190px + var(--sat)); padding: 12px 18px; font-size: 16px; max-width: calc(100% - 2 * var(--gap)); text-align: center; transition: opacity .3s; opacity: 0; pointer-events: none; }
+  #toast.show { opacity: 1; }
+  .posdot { width: 22px; height: 22px; border-radius: 50%; background: #3d8bff; border: 4px solid #fff; box-shadow: 0 0 0 8px #3d8bff44; }
+  /* Bibliothek und Dialog */
+  #library { z-index: 1100; top: calc(var(--gap) + var(--sat)); bottom: calc(var(--gap) + var(--sab)); left: var(--gap); right: var(--gap); display: flex; flex-direction: column; overflow: hidden; }
+  .libhead { display: flex; align-items: center; padding: 10px 10px 10px 16px; border-bottom: 1px solid var(--line); }
+  .libhead h2, #saveDlg h2 { margin: 0; font-size: 20px; flex: 1; }
+  #libList { list-style: none; margin: 0; padding: 6px 14px 14px; overflow-y: auto; }
+  #libList li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  #libList .t { font-size: 17px; font-weight: 600; }
+  #libList .m { color: var(--muted); font-size: 14px; margin: 2px 0 10px; }
+  #libList .b { display: flex; gap: 8px; }
+  #libList .b button { flex: 1; }
+  #libList .b button.danger { flex: 0 0 auto; color: var(--err); }
+  #libList .empty { color: var(--muted); border: 0; }
+  #saveDlg { z-index: 1200; left: var(--gap); right: var(--gap); top: 30%; padding: 18px; }
+  .dlgnote { color: var(--muted); font-size: 14px; }
+  #saveName { width: 100%; background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; height: 54px; font-size: 18px; margin-bottom: 12px; }
+  #save { flex: 0 0 auto; }
+  #rideVoice { margin-left: auto; width: 60px; min-width: 60px; height: 60px; border-radius: 50%; padding: 0; display: grid; place-items: center; }
+  #rideVoice.off { border-color: var(--err); }
+  #rideVoice svg { width: 30px; height: 30px; }
+  /* Bewertung nach der Fahrt und Fahrprofil */
+  #rateDlg { z-index: 1200; left: var(--gap); right: var(--gap); bottom: calc(var(--gap) + var(--sab)); padding: 18px; max-height: calc(100% - 2 * var(--gap) - var(--sat) - var(--sab)); overflow-y: auto; }
+  #rateDlg h2 { margin: 0; font-size: 22px; }
+  #rateMeta { color: var(--muted); font-size: 15px; margin: 4px 0 14px; }
+  #stars { display: flex; gap: 6px; margin-bottom: 6px; }
+  #stars button { flex: 1; min-height: 64px; font-size: 34px; line-height: 1; padding: 0; color: var(--line); }
+  #stars button.on { color: var(--accent-fg); border-color: var(--accent); }
+  #starText { text-align: center; color: var(--muted); font-size: 15px; min-height: 22px; margin-bottom: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chips button { min-height: 48px; border-radius: 24px; font-size: 15px; }
+  .chips button.on { background: var(--accent-tint); border: 2px solid var(--accent); color: var(--fg); }
+  #ridePane { overflow-y: auto; padding: 0 14px 14px; }
+  .profcard { background: var(--card2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 8px 0 12px; }
+  .profcard h3 { margin: 0 0 6px; font-size: 16px; }
+  .profcard ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .profcard li { margin: 4px 0; }
+  .profcard .b { display: flex; gap: 8px; margin-top: 10px; }
+  .profcard .b button { flex: 1; }
+  #rideList { list-style: none; margin: 0; padding: 0; }
+  #rideList li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  #rideList .t { font-size: 17px; font-weight: 600; }
+  #rideList .m { color: var(--muted); font-size: 14px; margin: 2px 0 8px; }
+  #rideList .s { color: var(--accent-fg); letter-spacing: 2px; }
+  #rideList .b { display: flex; gap: 8px; }
+  #rideList .b button { flex: 1; }
+  #rideList .b .danger { flex: 0 0 auto; color: var(--err); }
+  /* Unterstützen */
+  #support { z-index: 1150; top: calc(var(--gap) + var(--sat)); bottom: calc(var(--gap) + var(--sab)); left: var(--gap); right: var(--gap); display: flex; flex-direction: column; overflow: hidden; }
+  #supportBody { overflow-y: auto; padding: 4px 16px 16px; }
+  #supportBody h3 { font-size: 16px; margin: 16px 0 8px; }
+  .goal { background: var(--card2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 10px 0; }
+  .goal .gh { display: flex; justify-content: space-between; align-items: baseline; }
+  .goal .gh span { color: var(--muted); font-size: 14px; }
+  .goal .prog { height: 12px; border-radius: 6px; }
+  .costs { list-style: none; margin: 0 0 4px; padding: 0; font-size: 14px; color: var(--muted); }
+  .costs li { display: flex; justify-content: space-between; padding: 3px 0; }
+  .tips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tips button { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .way { display: block; text-decoration: none; color: var(--fg); background: var(--card2); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
+  .way b { display: block; font-size: 17px; }
+  .way span { color: var(--muted); font-size: 14px; }
+  .way .mono { color: var(--fg); font-family: ui-monospace, monospace; }
+  button.support { width: 100%; margin: 8px 0; color: var(--accent-fg); }
+  @media (min-width: 760px) { #library, #saveDlg, #rateDlg, #support { right: auto; width: 420px; } }
+  /* Boxengasse */
+  #boxBtn { display: none; }
+  body.box-unlocked #boxBtn { display: grid; }
+  body.box-unlocked #rideInfo::before { content: '⚙ '; color: var(--accent-fg); }
+  #box { z-index: 1300; top: calc(var(--gap) + var(--sat)); bottom: calc(var(--gap) + var(--sab)); left: var(--gap); right: var(--gap); display: flex; flex-direction: column; overflow: hidden; }
+  .boxhead { display: flex; align-items: center; padding: 10px 10px 6px 16px; }
+  .boxhead div { flex: 1; }
+  .boxhead h2 { margin: 0; font-size: 20px; color: var(--accent-fg); letter-spacing: .02em; }
+  .boxhead small { color: var(--muted); font-size: 12px; }
+  #boxTabs { display: flex; gap: 6px; padding: 4px 12px 10px; overflow-x: auto; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+  #boxTabs button { min-height: 38px; padding: 0 14px; border-radius: 999px; white-space: nowrap; font-size: 14px; }
+  #boxTabs button.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+  #boxBody { overflow-y: auto; padding: 4px 16px 20px; font-size: 14px; -webkit-overflow-scrolling: touch; }
+  #boxBody h3 { font-size: 15px; margin: 18px 0 6px; color: var(--fg); }
+  #boxBody .lead { color: var(--muted); }
+  #boxBody .muted, #boxBody .small { color: var(--muted); }
+  #boxBody .small { font-size: 12px; margin: 0 0 6px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .good { color: var(--ok); } .bad { color: var(--err); } .warn { color: var(--warn); }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 8px 0; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; }
+  .flow { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 8px 0 12px; font-size: 12px; }
+  .flow span { border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; background: var(--card2); }
+  .flow b { color: var(--accent-fg); }
+  .stages { list-style: none; padding: 0; margin: 0; }
+  .stages li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .stages .sh { display: flex; align-items: center; gap: 8px; }
+  .stages .sh b { flex: 1; }
+  .stages .sh i, .legend2 i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .stages .bar { height: 6px; background: var(--card2); border-radius: 3px; margin: 6px 0 4px; overflow: hidden; }
+  .stages .bar span { display: block; height: 100%; border-radius: 3px; }
+  .stages .sub { font-size: 13px; }
+  .callout { background: var(--card2); border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 0; }
+  .stack { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--card2); }
+  .stack span { display: block; height: 100%; }
+  .legend2 { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--muted); }
+  .legend2 li { display: flex; align-items: center; gap: 6px; }
+  .legend2 b { color: var(--fg); font-weight: 600; }
+  .profile { width: 100%; height: 130px; display: block; background: var(--card2); border-radius: 10px; }
+  .hist { display: flex; align-items: flex-end; gap: 4px; height: 110px; padding: 4px; background: var(--card2); border-radius: 10px; }
+  .hist div { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+  .hist span { width: 100%; border-radius: 3px 3px 0 0; min-height: 1px; }
+  .hist small { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+  .tbl th, .tbl td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+  .tbl th { color: var(--muted); font-weight: 500; }
+  .tbl input { width: 80px; }
+  .top { padding-left: 20px; margin: 6px 0; }
+  .top li { padding: 3px 0; }
+  .lab { display: grid; gap: 8px; }
+  .lab label { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; color: var(--fg); font-size: 14px; margin: 0; padding: 6px 8px; border-radius: 10px; background: var(--card2); }
+  .lab label small { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+  #boxBody input[type=number] { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; height: 38px; padding: 0 8px; font: inherit; width: 90px; }
+  .pair { display: flex; gap: 6px; }
+  #boxBody .chg, #boxBody input.chg { outline: 2px solid var(--accent); }
+  #boxBody .buttons { margin: 14px 0 4px; }
+  #boxBody .danger { color: var(--err); }
+  #boxDump { width: 100%; height: 160px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; font: 11px ui-monospace, monospace; }
+  .logl { list-style: none; padding: 0; margin: 8px 0; font-size: 13px; }
+  .logl li { padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; min-width: 64px; text-align: center; border-radius: 6px; padding: 0 6px; font-size: 11px; background: var(--card2); color: var(--muted); }
+  .tag.fehler { background: #ff8a9a33; color: var(--err); } .tag.ansage { color: var(--accent-fg); } .tag.befehl { color: #b9a6ff; } .tag.netz { color: #4f9bff; } .tag.route, .tag.speicher { color: var(--ok); } .tag.labor { color: var(--warn); }
+  @media (min-width: 760px) { #box { left: auto; width: 560px; } }
+  /* Offline-Regionen */
+  .libtabs { margin: 8px 14px 0; }
+  #regionPane { overflow-y: auto; padding: 4px 14px 14px; }
+  #regionList { list-style: none; margin: 0; padding: 0; }
+  #regionList li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  #regionList .t { font-size: 17px; font-weight: 600; }
+  #regionList .m { color: var(--muted); font-size: 14px; margin: 2px 0 8px; }
+  #regionList .m.ok { color: var(--ok); }
+  #regionList .b { display: flex; gap: 8px; flex-wrap: wrap; }
+  #regionList .b button { flex: 1; }
+  #regionList .b .danger { flex: 0 0 auto; color: var(--err); }
+  .prog { height: 8px; background: var(--card2); border-radius: 4px; overflow: hidden; margin: 6px 0; }
+  .prog span { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+  .selrow { display: flex; align-items: center; gap: 10px; color: var(--fg); font-size: 15px; min-height: 48px; }
+  .selrow select { flex: 1; font: inherit; color: var(--fg); background: var(--card2); border: 1px solid var(--line); border-radius: 10px; height: 44px; padding: 0 10px; }
+  #offlineChip { background: var(--warn); color: #1a1100; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; }
+  /* Varianten und Bedingungen unterwegs */
+  #alts { display: flex; gap: 8px; margin: 4px 0 10px; overflow-x: auto; }
+  #alts:empty { display: none; }
+  #alts button { flex: 1 0 104px; min-height: 0; padding: 8px 10px; text-align: left; border-radius: 12px; line-height: 1.3; }
+  #alts button.on { border: 2px solid var(--accent); background: var(--accent-tint); }
+  #alts .l { font-weight: 700; font-size: 15px; }
+  #alts .n { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #cond { background: var(--card2); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin: 4px 0 10px; }
+  .condhead { display: flex; align-items: center; gap: 8px; }
+  .condhead b { flex: 1; }
+  #depart { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; height: 38px; padding: 0 8px; color-scheme: dark; }
+  #departNow { min-height: 38px; padding: 0 12px; }
+  #condSummary { margin: 8px 0 4px; font-size: 15px; }
+  #condWarn { margin: 0; padding: 0; list-style: none; font-size: 14px; }
+  #condWarn li { padding: 3px 0 3px 22px; position: relative; color: var(--warn); }
+  #condWarn li::before { content: '⚠'; position: absolute; left: 0; }
+  #condWarn li.glare { color: #ffd23f; } #condWarn li.rain, #condWarn li.storm { color: #7fb2ff; } #condWarn li.dark { color: #b9a6ff; }
+  #condWarn li.muted { color: var(--muted); } #condWarn li.muted::before { content: 'ℹ'; }
+  [hidden] { display: none !important; }
+  body[data-view=ride] .leaflet-control-zoom { display: none; }
+  @media (min-width: 760px) { #rideTop, #quick, #voice { right: auto; width: 460px; } }
+</style>
+</head>
+<body data-active="ab" data-view="plan">
+<div id="map"></div>
+
+<!-- ===== Planung ===== -->
+<div id="topbar" class="float plan">
+  <input id="search" type="search" enterkeyhint="search" placeholder="Wohin? Ort suchen">
+  <span id="offlineChip" hidden>offline</span>
+  <button id="boxBtn" class="icon" aria-label="Boxengasse" title="Boxengasse">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ff4d50" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>
+  </button>
+  <button id="supportBtn" class="icon" data-support aria-label="Unterstützen und Feedback" title="Unterstützen und Feedback">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ff4d50" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+  </button>
+  <button id="libBtn" class="icon" aria-label="Meine Routen" title="Meine Routen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#f4f4f2" stroke-width="2.2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+  </button>
+  <button id="locate" class="icon" aria-label="Mein Standort als Start" title="Mein Standort als Start">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ff4d50" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+  </button>
+</div>
+
+<section id="sheet" class="float plan">
+  <div id="sheetHandle">
+    <h1><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21c0-4 10-4 10-8s-10-3-10-7 5-3 5-3" fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round"/></svg>Kurven<span>jäger</span></h1>
+    <span id="summary"></span>
+    <button id="toggle" aria-label="Ein-/ausklappen">▾</button>
+  </div>
+  <div class="sbody">
+    <div class="seg">
+      <button data-set-mode="ab" class="on">Start → Ziel</button>
+      <button data-set-mode="loop">Rundtour</button>
+    </div>
+    <ol id="stops" data-mode="ab"></ol>
+    <div data-mode="ab"><div id="alts"></div></div>
+    <div id="cond" hidden>
+      <div class="condhead"><b>Unterwegs</b>
+        <input id="depart" type="datetime-local" aria-label="Abfahrt">
+        <button id="departNow">Jetzt</button></div>
+      <p id="condSummary"></p>
+      <ul id="condWarn"></ul>
+    </div>
+    <div class="row" data-mode="loop">
+      <label>Tourlänge <b id="lenVal"></b></label>
+      <input id="len" type="range" min="30" max="150" step="10" value="80">
+    </div>
+    <div class="row">
+      <label>Kurvenlust <b id="curvyVal"></b></label>
+      <input id="curvy" type="range" min="0" max="100" value="80">
+    </div>
+    <details>
+      <summary>Weitere Einstellungen und Details</summary>
+      <div class="row" data-mode="ab">
+        <label>Max. Umweg <b id="detourVal"></b></label>
+        <input id="detour" type="range" min="110" max="300" step="10" value="180">
+      </div>
+      <label class="check"><input id="avoid" type="checkbox" checked> Autobahn und Schnellstraße meiden</label>
+      <label class="check"><input id="heat" type="checkbox"> Kurven-Heatmap aller Straßen</label>
+      <label class="selrow">Karte
+        <select id="mapSource">
+          <option value="auto">Automatisch (offline ohne Netz)</option>
+          <option value="online">Online (OpenStreetMap)</option>
+          <option value="offline">Offline (eigene Karte aus Regionen)</option>
+        </select>
+      </label>
+      <label class="check"><input id="dark" type="checkbox" checked> Dunkle Karte</label>
+      <label class="check"><input id="topo" type="checkbox"> Gelände-Schattierung</label>
+      <label class="check"><input id="voiceOn" type="checkbox" checked> Sprachansagen während der Fahrt</label>
+      <label class="check"><input id="sim" type="checkbox"> Fahrt simulieren (zum Testen)</label>
+      <button class="support" data-support>♥ Kurvenjäger unterstützen</button>
+      <div class="row buttons">
+        <button id="reroll" data-mode="loop">Neu würfeln</button>
+        <button id="gpx" disabled>GPX teilen</button>
+        <button id="reset">Zurücksetzen</button>
+      </div>
+      <div id="status" class="row"></div>
+      <div id="stats" class="row"></div>
+      <div class="row legend"><span>gerade</span><div class="bar"></div><span>kurvig</span></div>
+      <p class="foot">Gestrichelt grau = schnellste Route zum Vergleich. Straßenstück antippen zeigt dessen Kurvigkeit.
+        Daten © OpenStreetMap-Mitwirkende (ODbL), Karte: Protomaps, Höhen: AWS Terrain Tiles. Suche: Photon, Wetter: Open-Meteo.</p>
+    </details>
+  </div>
+  <div class="sfoot">
+    <ol id="steps"></ol>
+    <p id="readyHint"></p>
+    <div class="actions">
+      <button id="go" class="big" disabled>Berechnen</button>
+      <button id="save" class="big" hidden>Speichern</button>
+      <button id="ride" class="big primary" hidden>Fahrt starten</button>
+    </div>
+  </div>
+</section>
+
+<section id="library" class="float plan" hidden>
+  <div class="libhead"><h2>Meine Routen</h2><button id="libClose" class="icon" aria-label="Schließen">✕</button></div>
+  <div class="seg libtabs"><button data-lib="routes" class="on">Routen</button><button data-lib="regions">Offline-Regionen</button><button data-lib="rides">Fahrten</button></div>
+  <ol id="libList"></ol>
+  <div id="regionPane" hidden>
+    <p class="dlgnote">Lade ein Gebiet einmal herunter (Straßen, Abbiegeverbote, Höhenmodell, Ortsnamen). Danach funktionieren Planen, Navigation und die Offline-Karte ohne Netz. Daten © OpenStreetMap-Mitwirkende.</p>
+    <ol id="regionList"></ol>
+  </div>
+  <div id="ridePane" hidden>
+    <label class="check"><input id="profOn" type="checkbox" checked> Persönliches Fahrprofil verwenden</label>
+    <div id="profCard" class="profcard"></div>
+    <ol id="rideList"></ol>
+  </div>
+  <div style="padding: 0 14px 10px"><button class="support" data-support>♥ Kurvenjäger unterstützen</button></div>
+</section>
+
+<section id="support" class="float plan" hidden>
+  <div class="libhead"><h2>Unterstützen und Feedback</h2><button id="supportClose" class="icon" aria-label="Schließen">✕</button></div>
+  <div id="supportBody"></div>
+</section>
+
+<div id="rateDlg" class="float plan" hidden>
+  <h2>Wie war die Tour?</h2>
+  <p id="rateMeta"></p>
+  <div id="stars"></div>
+  <div id="starText"></div>
+  <div id="rateTags" class="chips"></div>
+  <p class="dlgnote">Deine Bewertung bleibt auf dem Gerät und passt künftige Routen an deinen Fahrstil an.</p>
+  <div class="actions"><button id="rateSkip" class="big">Überspringen</button><button id="rateSave" class="big primary">Speichern</button></div>
+</div>
+
+<div id="saveDlg" class="float plan" hidden>
+  <h2>Route speichern</h2>
+  <p class="dlgnote">Gespeichert werden Punkte, Einstellungen und die Straßendaten. So kannst du die Route später ohne erneuten Download fahren.</p>
+  <form id="saveForm">
+    <input id="saveName" type="text" maxlength="80" enterkeyhint="done" autocomplete="off">
+    <div class="actions"><button type="button" id="saveCancel" class="big">Abbrechen</button><button class="big primary">Speichern</button></div>
+  </form>
+</div>
+
+<!-- ===== Fahrt ===== -->
+<div id="rideTop" class="float ride">
+  <div class="man">
+    <div id="manArrow"></div>
+    <div style="min-width:0">
+      <div id="manDist">–</div>
+      <div id="manText">Suche GPS …</div>
+    </div>
+    <button id="rideVoice" aria-label="Sprachansagen an/aus" title="Sprachansagen an/aus"></button>
+  </div>
+  <div id="manNext"></div>
+</div>
+<div id="rideInfo" class="float ride"></div>
+<button id="recenter" class="float ride" hidden>Zentrieren</button>
+<div id="quick" class="float ride" hidden>
+  <button data-cmd="Tankstelle">Tankstelle</button>
+  <button data-cmd="Pause">Pause / Café</button>
+  <button data-cmd="Wie weit noch">Wie weit noch?</button>
+  <button data-cmd="Halt überspringen">Halt überspringen</button>
+</div>
+<div id="voice" class="float ride" hidden>
+  <p id="voiceState">Ich höre zu …</p>
+  <form id="voiceForm"><input id="voiceText" type="text" enterkeyhint="send" placeholder="Befehl eingeben" autocomplete="off"><button class="primary">OK</button></form>
+  <ul id="voiceHelp"></ul>
+</div>
+<div id="rideBar" class="ride">
+  <button id="rideStop" class="side" aria-label="Fahrt beenden" title="Fahrt beenden">
+    <svg viewBox="0 0 24 24" fill="#ff6b6b"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+  </button>
+  <button id="mic" aria-label="Sprachbefehl" title="Sprachbefehl">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+  </button>
+  <button id="ridePlus" class="side" aria-label="Stopp hinzufügen" title="Stopp hinzufügen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ff4d50" stroke-width="2.2" stroke-linecap="round"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><path d="M12 7v6M9 10h6"/></svg>
+  </button>
+</div>
+<!-- ===== Boxengasse (Technik-Fenster, versteckt) ===== -->
+<section id="box" class="float" hidden>
+  <div class="boxhead">
+    <div><h2>Boxengasse</h2><small>Telemetrie und Technik</small></div>
+    <button id="boxClose" class="icon" aria-label="Schließen">✕</button>
+  </div>
+  <nav id="boxTabs"></nav>
+  <div id="boxBody"></div>
+</section>
+<div id="toast" class="float"></div>
+
+<script type="module" src="build/app.js"></script>
+</body>
+</html>
