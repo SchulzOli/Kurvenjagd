@@ -14,6 +14,7 @@ const env = {
   weather: process.env.KJ_WEATHER_URL,
   release: process.env.KJ_RELEASE,
   channel: process.env.KJ_CHANNEL,
+  site: process.env.KJ_SITE_URL,
 };
 const slash = u => (u && !u.endsWith('/') ? u + '/' : u);
 
@@ -32,4 +33,6 @@ export const CONFIG = {
   // Vertriebsweg: 'web' und 'fdroid' zeigen Spenden-Links; 'store' (Google Play, App Store) ausschließlich
   // Trinkgeld per In-App-Kauf – externe Spenden-Links sind dort nicht erlaubt. Ohne Angabe: nativ 'store', sonst 'web'.
   channel: env.channel || null,
+  // Website mit Datenschutzerklärung und Impressum (später eigene Domain)
+  siteUrl: slash(env.site || 'https://schulzoli.github.io/Kurvenjagd/'),
 };

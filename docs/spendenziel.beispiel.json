@@ -1,9 +1,26 @@
 {
-  "hinweis": "BEISPIEL für die Entwicklung. Auf dem Datenspeicher monatlich von Hand pflegen.",
+  "hinweis": "BEISPIEL (Stufe 1, Android-Beta). Auf dem Datenspeicher monatlich von Hand pflegen; Apple-Konto erst ab iOS (Stufe 3) hinzufügen.",
   "monat": "2026-11",
-  "ziel": 15,
-  "eingegangen": 6,
-  "kosten": [["Apple-Entwicklerkonto (99 $/Jahr)", 7.5], ["Domain", 1.5], ["Datenspeicher", 0], ["Rücklage und Gebühren", 5]],
+  "ziel": 10,
+  "eingegangen": 4,
+  "kosten": [
+    [
+      "Domain",
+      1.5
+    ],
+    [
+      "Google-Play-Konto (25 $ einmalig, aufs erste Jahr verteilt)",
+      2
+    ],
+    [
+      "Datenspeicher (bis 10 GB kostenlos)",
+      0
+    ],
+    [
+      "Rücklage und Zahlungsgebühren",
+      4
+    ]
+  ],
   "links": {
     "liberapay": "https://liberapay.com/BEISPIEL",
     "github": "",

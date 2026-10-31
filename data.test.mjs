@@ -71,9 +71,10 @@ test('Paket-Bau aus einem OSM-Auszug: Format passt zur App', { skip: !python && 
   const dir = mkdtempSync(join(tmpdir(), 'kj-data-'));
   try {
     writeFileSync(join(dir, 'test.osm'), OSM);
-    execFileSync('python', ['scripts/build_data.py', join(dir, 'test.osm'), join(dir, 'out')], { stdio: 'pipe' });
+    execFileSync('python', ['scripts/build_data.py', join(dir, 'test.osm'), join(dir, 'out'), '--name', 'Testgebiet'], { stdio: 'pipe' });
     const manifest = JSON.parse(readFileSync(join(dir, 'out', 'manifest.json'), 'utf8'));
     assert.deepEqual(manifest.tiles, ['t480_82']);
+    assert.equal(manifest.region, 'Testgebiet', 'Gebietsname für die Meldung „nicht abgedeckt“');
     assert.deepEqual(manifest.local, ['t480_82']);
     const roads = JSON.parse(new TextDecoder().decode(gunzipSync(readFileSync(join(dir, 'out', 'roads', 't480_82.json.gz')))));
     const local = JSON.parse(new TextDecoder().decode(gunzipSync(readFileSync(join(dir, 'out', 'local', 't480_82.json.gz')))));

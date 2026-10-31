@@ -33,7 +33,7 @@ Damit besteht der Betrieb aus:
 
 - Ein aktiver Nutzer im Monat plant ~4 Touren und fährt ~2: ca. **1.200 Dateiabrufe** (Kartenkacheln + Straßenpakete), auf dem Gerät 7–30 Tage gecacht.
 - Die Karte wird über einen kleinen Cloudflare Worker ausgeliefert: frei bis 100.000 Abrufe am Tag, danach 5 $/Monat inklusive 10 Mio., dann 0,30 $ je Million. Etwa 30 % der Abrufe gehen bis zum Speicher durch (0,36 $ je Million über den Freibetrag).
-- Speicher: Karte D-A-CH ~4–5 GB, Straßenpakete ~2 GB → im Freibetrag.
+- Speicher (gemessen 10/2026): Karte D-A-CH bis Zoom 14 4,9 GB, Straßenpakete ≈ 0,8 GB → im Freibetrag (10 GB). Beta Baden-Württemberg: 0,47 GB + 59 MB.
 - Ortssuche: bis 5.000 Nutzer komoot; danach Server mit 16 GB RAM (~20 €, nach den Hetzner-Preiserhöhungen 2026); ab 50.000 Nutzer größer oder zwei (~40 €).
 - Wetter: ~6 Abfragen je Nutzer und Monat (eine Abfrage deckt die ganze Route). Bezahlter Open-Meteo-Tarif nur falls nötig, ca. 29 €/Monat (bis 1 Mio. Abfragen).
 - Fix: Apple-Entwicklerkonto 99 $/Jahr (~7,50 €/Monat), Domain (~1,50 €/Monat). Google Play einmalig 25 $, F-Droid kostenlos.

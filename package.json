@@ -26,6 +26,8 @@
     "android": "npm run sync && cap open android",
     "ios": "npm run sync && cap open ios",
     "apk": "node scripts/apk.mjs",
+    "release:apk": "node scripts/release-android.mjs --apk",
+    "release:aab": "node scripts/release-android.mjs",
     "emu": "node scripts/emu.mjs"
   },
   "dependencies": {

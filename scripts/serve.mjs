@@ -1,5 +1,5 @@
-// Testserver für die Entwicklung: liefert www/ und unter /data/ die Testdaten aus data/
-// (Straßenpakete, Karte). Kann Teilanfragen (Range, nötig für PMTiles) und CORS, damit auch der
+// Testserver für die Entwicklung: liefert www/ (App), unter /data/ die Testdaten aus data/ (Straßenpakete,
+// Karte) und unter /site/ die Website. Kann Teilanfragen (Range, nötig für PMTiles) und CORS, damit auch der
 // Android-Emulator die Daten per `adb reverse` von http://127.0.0.1:8765/data/ laden kann –
 // so wie die echte App sie später vom eigenen Speicher (CDN) holt.
 //
@@ -9,7 +9,7 @@ import { createReadStream, statSync } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
 
 const port = +(process.argv[2] || 8765);
-const ROOTS = [['/data/', resolve('data')], ['/', resolve('www')]];
+const ROOTS = [['/data/', resolve('data')], ['/site/', resolve('site')], ['/', resolve('www')]];
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
   '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.map': 'application/json',
   '.gz': 'application/gzip', '.pmtiles': 'application/octet-stream' };

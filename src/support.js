@@ -110,8 +110,8 @@ App-Version ${pkg.version} · ${Capacitor.getPlatform()} · ${ch}`;
     const url = (kind, title) => `${REPO}/issues/new?labels=${kind}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
     return `<h3>Feedback</h3>
       <p class="dlgnote">Fehler gefunden oder eine Idee? Schreib es öffentlich ins Projekt auf GitHub (kostenloses Konto nötig).</p>
-      <a class="way" href="${url('bug', 'Fehler: ')}" target="_blank" rel="noopener"><b>Fehler melden</b><span>Was ist passiert, was hast du erwartet?</span></a>
-      <a class="way" href="${url('enhancement', 'Idee: ')}" target="_blank" rel="noopener"><b>Idee vorschlagen</b><span>Was würde dir unterwegs helfen?</span></a>
+      <a class="way" href="${url('fehler', 'Fehler: ')}" target="_blank" rel="noopener"><b>Fehler melden</b><span>Was ist passiert, was hast du erwartet?</span></a>
+      <a class="way" href="${url('idee', 'Idee: ')}" target="_blank" rel="noopener"><b>Idee vorschlagen</b><span>Was würde dir unterwegs helfen?</span></a>
       <a class="way" href="${REPO}/issues" target="_blank" rel="noopener"><b>Alle Rückmeldungen ansehen</b><span>github.com/SchulzOli/Kurvenjagd</span></a>`;
   }
 

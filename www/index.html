@@ -203,7 +203,13 @@
   .way span { color: var(--muted); font-size: 14px; }
   .way .mono { color: var(--fg); font-family: ui-monospace, monospace; }
   button.support { width: 100%; margin: 8px 0; color: var(--accent-fg); }
-  @media (min-width: 760px) { #library, #saveDlg, #rateDlg, #support { right: auto; width: 420px; } }
+  #about { z-index: 1150; top: calc(var(--gap) + var(--sat)); bottom: calc(var(--gap) + var(--sab)); left: var(--gap); right: var(--gap); display: flex; flex-direction: column; overflow: hidden; }
+  #aboutBody { overflow-y: auto; padding: 4px 16px 16px; }
+  #aboutBody h3 { font-size: 16px; margin: 16px 0 8px; }
+  #aboutBody .plain { margin: 0 0 10px; padding-left: 18px; font-size: 14px; color: var(--muted); }
+  #aboutBody .plain li { margin: 4px 0; } #aboutBody .plain b { color: var(--fg); }
+  button.about { width: 100%; margin: 0 0 8px; color: var(--muted); }
+  @media (min-width: 760px) { #library, #saveDlg, #rateDlg, #support, #about { right: auto; width: 420px; } }
   /* Boxengasse */
   #boxBtn { display: none; }
   body.box-unlocked #boxBtn { display: grid; }
@@ -375,6 +381,7 @@
       <label class="check"><input id="voiceOn" type="checkbox" checked> Sprachansagen während der Fahrt</label>
       <label class="check"><input id="sim" type="checkbox"> Fahrt simulieren (zum Testen)</label>
       <button class="support" data-support>♥ Kurvenjäger unterstützen</button>
+      <button class="about" data-about>Über Kurvenjäger · Datenschutz · Lizenzen</button>
       <div class="row buttons">
         <button id="reroll" data-mode="loop">Neu würfeln</button>
         <button id="gpx" disabled>GPX teilen</button>
@@ -412,6 +419,11 @@
     <ol id="rideList"></ol>
   </div>
   <div style="padding: 0 14px 10px"><button class="support" data-support>♥ Kurvenjäger unterstützen</button></div>
+</section>
+
+<section id="about" class="float plan" hidden>
+  <div class="libhead"><h2>Über Kurvenjäger</h2><button id="aboutClose" class="icon" aria-label="Schließen">✕</button></div>
+  <div id="aboutBody"></div>
 </section>
 
 <section id="support" class="float plan" hidden>

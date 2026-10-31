@@ -1,5 +1,17 @@
 apply plugin: 'com.android.application'
 
+// Version aus package.json: eine Quelle für Web und Android (0.1.0 → versionCode 100)
+def pkg = new groovy.json.JsonSlurper().parse(rootProject.file('../package.json'))
+def ver = pkg.version.tokenize('.').collect { it.toInteger() }
+
+// Signaturschlüssel für Veröffentlichungen: android/keystore.properties (nie einchecken) oder Umgebungsvariablen.
+// Anleitung: docs/veroeffentlichung.md
+def ksProps = new Properties()
+def ksFile = rootProject.file('keystore.properties')
+if (ksFile.exists()) ksFile.withInputStream { ksProps.load(it) }
+def ks = { key, envName -> ksProps.getProperty(key) ?: System.getenv(envName) }
+def hasKeystore = ks('storeFile', 'KJ_KEYSTORE') != null
+
 android {
     namespace = "de.kurvenjaeger.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +19,8 @@ android {
         applicationId "de.kurvenjaeger.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode ver[0] * 10000 + ver[1] * 100 + ver[2]
+        versionName pkg.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +28,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (hasKeystore) {
+                storeFile file(ks('storeFile', 'KJ_KEYSTORE'))
+                storePassword ks('storePassword', 'KJ_KEYSTORE_PASSWORD')
+                keyAlias ks('keyAlias', 'KJ_KEY_ALIAS')
+                keyPassword ks('keyPassword', 'KJ_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (hasKeystore) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

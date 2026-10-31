@@ -21,6 +21,7 @@ import { FEATURES } from './features.js';
 import { int16ToBase64, base64ToInt16 } from './dem.js';
 import { initProfile } from './profile-ui.js';
 import { initSupport } from './support.js';
+import { initAbout } from './about.js';
 import { CONFIG } from './config.js';
 import { leafletLayer, paintRules, labelRules } from 'protomaps-leaflet';
 import { namedFlavor } from '@protomaps/basemaps';
@@ -614,7 +615,9 @@ $('search').addEventListener('keydown', async ev => {
   ev.target.blur(); // Tastatur schließen
   if (!isOnline()) return flash('Die Ortssuche braucht Internet. Tippe den Ort direkt auf der Karte an.');
   try {
-    const res = await timed('Photon', fetch(`${CONFIG.geocoderUrl}api/?limit=1&lang=de&q=${encodeURIComponent(ev.target.value)}`));
+    // Orte nahe dem Kartenausschnitt bevorzugen (sonst gewinnt z. B. Münsingen in der Schweiz statt auf der Alb)
+    const c = map.getCenter();
+    const res = await timed('Photon', fetch(`${CONFIG.geocoderUrl}api/?limit=1&lang=de&lat=${c.lat.toFixed(3)}&lon=${c.lng.toFixed(3)}&q=${encodeURIComponent(ev.target.value)}`));
     const f = (await res.json()).features?.[0];
     if (!f) return status('Ort nicht gefunden', true);
     const [lon, lat] = f.geometry.coordinates;
@@ -882,6 +885,7 @@ const ride = initRide(map, S, {
 // ---------- Fahrprofil ----------
 
 const support = initSupport({ flash });
+initAbout();
 
 const prof = initProfile({
   engine, flash,

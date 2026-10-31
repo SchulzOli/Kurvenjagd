@@ -11,7 +11,7 @@
   <img src="docs/bilder/fahrt.png" width="260" alt="Fahrt: Abbiege-Hinweis, Route auf dunkler Karte, große Mikrofon-Taste">
 </p>
 
-**Status:** funktionsfähiger Prototyp, getestet im Browser und im Android-Emulator. Noch nicht in den Stores; die Straßendaten für Deutschland, Österreich und die Schweiz brauchen noch den eigenen Datenspeicher ([docs/finanzierung-und-betrieb.md](docs/finanzierung-und-betrieb.md)).
+**Status:** Läuft und ist im Browser und im Android-Emulator getestet, aber noch nicht im Store. Als Nächstes kommt eine Android-Beta für Baden-Württemberg; Fahrplan und Stand: [docs/veroeffentlichung.md](docs/veroeffentlichung.md).
 
 *English: Kurvenjäger plans twisty motorcycle routes from OpenStreetMap data and navigates them with voice guidance – free, open source (GPL-3.0), no ads, no accounts, everything stays on the device. The UI and docs are in German; issues and pull requests in English are welcome.*
 
@@ -87,7 +87,7 @@ Verstecktes Fenster mit Einblick in die Technik, für Fahrer als Infotainment un
 - **Freischalten:** 7× schnell auf das Logo „Kurvenjäger“ tippen (wie der Android-Entwicklermodus), alternativ `?boxengasse` an die URL hängen oder während der Fahrt „Boxengasse“ sagen. Danach öffnet die Werkzeug-Taste oben bzw. ein Tipp auf die Info-Zeile in der Fahrt das Fenster. Unter „System“ lässt sie sich wieder sperren.
 - **Bereiche:** Überblick (Pipeline mit echten Zeiten), Route (Kurvenprofil, Kurven-Mix, kurvigste Abschnitte), Netz (Graph, Kurvigkeits-Verteilung, Datenabruf), Fahrt (Live-GPS, Manöver, Ansagen), Profil (gelernte Anpassungen mit Zahlen, Strecken-Eigenschaften je Fahrt), Labor (alle Parameter live ändern und vergleichen), System (Dienste, Plattform, „Diagnose kopieren“), Log.
 
-Optimierungsideen und alle infrage kommenden Datenquellen: [docs/optimierung-und-datenquellen.md](docs/optimierung-und-datenquellen.md). Betrieb, Kosten, Spendenziel und Zahlungswege („zahl, was du willst“): [docs/finanzierung-und-betrieb.md](docs/finanzierung-und-betrieb.md).
+Optimierungsideen und alle infrage kommenden Datenquellen: [docs/optimierung-und-datenquellen.md](docs/optimierung-und-datenquellen.md). Betrieb, Kosten, Spendenziel und Zahlungswege („zahl, was du willst“): [docs/finanzierung-und-betrieb.md](docs/finanzierung-und-betrieb.md). Alle Abhängigkeiten mit Nutzungsgrenzen und Kosten: [docs/abhaengigkeiten-und-grenzen.md](docs/abhaengigkeiten-und-grenzen.md).
 
 ## Entwicklung
 
@@ -131,6 +131,13 @@ npm run apk        # → dist/Kurvenjaeger-debug.apk
 ```
 
 Das Skript nutzt ein portables JDK 21 und das Android SDK aus `D:\Android` oder `%LOCALAPPDATA%\Android` (`jdk-21`, `Sdk`), sonst `JAVA_HOME`/`ANDROID_HOME`. Zum Installieren die APK aufs Handy kopieren und „Installation aus unbekannten Quellen“ erlauben.
+
+Signierte Versionen für die Veröffentlichung (Schlüssel und Ablauf: [docs/veroeffentlichung.md](docs/veroeffentlichung.md)):
+
+```bash
+KJ_DATA_URL=https://daten.example.org/v1/ npm run release:apk   # Beta-APK für GitHub (Spenden-Links)
+KJ_DATA_URL=https://daten.example.org/v1/ npm run release:aab   # AAB für Google Play (Trinkgeld per In-App-Kauf)
+```
 
 ### Im Emulator testen
 

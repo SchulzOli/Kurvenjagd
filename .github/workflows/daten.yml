@@ -1,5 +1,10 @@
-# Wöchentlicher Bau der Kurvenjäger-Daten: Straßenpakete und Vektorkarte für Deutschland, Österreich und
-# die Schweiz, hochgeladen in den eigenen Speicher (Cloudflare R2, kein Entgelt für Datenabfluss).
+# Wöchentlicher Bau der Kurvenjäger-Daten: Straßenpakete und Vektorkarte, hochgeladen in den eigenen
+# Speicher (Cloudflare R2, kein Entgelt für Datenabfluss). Gebiet: Standard Baden-Württemberg (Beta),
+# per Repository-Variablen umstellbar, z. B. auf D-A-CH:
+#   DATEN_PBF  = https://download.geofabrik.de/europe/dach-latest.osm.pbf
+#   DATEN_NAME = Deutschland, Österreich und die Schweiz
+#   KARTE_BBOX = 45.8,5.9,55.1,17.2          (s,w,n,e)
+#   KARTE_ZOOM = 14                           (D-A-CH: ≈ 4,9 GB; 15 wären ≈ 10 GB)
 # Kostenlos für öffentliche Repositories. Die App liest die Daten unter KJ_DATA_URL (scripts/build.mjs).
 #
 # Einmalig in den Repository-Einstellungen anlegen (Settings → Secrets and variables → Actions):
@@ -19,6 +24,10 @@ jobs:
     timeout-minutes: 300
     env:
       PREFIX: v1          # Datenformat (FORMAT in scripts/build_data.py); neues Format = neuer Ordner
+      PBF: ${{ vars.DATEN_PBF || 'https://download.geofabrik.de/europe/germany/baden-wuerttemberg-latest.osm.pbf' }}
+      NAME: ${{ vars.DATEN_NAME || 'Baden-Württemberg' }}
+      BBOX: ${{ vars.KARTE_BBOX || '47.5,7.5,49.8,10.5' }}
+      ZOOM: ${{ vars.KARTE_ZOOM || '14' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,17 +38,25 @@ jobs:
           python-version: '3.12'
       - run: npm ci
       - run: pip install osmium==4.3.2
+      - run: sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
 
-      - name: OSM-Auszug D-A-CH (Geofabrik)
-        run: curl -sSfL -o dach.osm.pbf https://download.geofabrik.de/europe/dach-latest.osm.pbf
+      - name: OSM-Auszug (Geofabrik)
+        run: curl -sSfL -o region.osm.pbf "$PBF"
+
+      # Nur Straßen, Orte, Tankstellen/Rasten und Abbiegeverbote behalten: spart Speicher und Zeit
+      # (D-A-CH: 6,3 GB Auszug, sonst passt der Koordinaten-Index kaum in den Arbeitsspeicher des Rechners)
+      - name: Auszug eindampfen
+        run: |
+          osmium tags-filter region.osm.pbf w/highway nw/place nw/amenity=fuel,cafe,restaurant,biergarten,fast_food r/type=restriction -o filtered.osm.pbf
+          rm region.osm.pbf
 
       - name: Straßenpakete
-        run: python scripts/build_data.py dach.osm.pbf out && rm dach.osm.pbf
+        run: python scripts/build_data.py filtered.osm.pbf out --name "$NAME" && rm filtered.osm.pbf
 
-      - name: Vektorkarte (Protomaps, bis Zoom 15)
+      - name: Vektorkarte (Protomaps)
         run: |
           curl -sSfL https://github.com/protomaps/go-pmtiles/releases/download/v1.31.2/go-pmtiles_1.31.2_Linux_x86_64.tar.gz | tar -xz -C /usr/local/bin pmtiles
-          node scripts/build-map.mjs out/map.pmtiles
+          node scripts/build-map.mjs out/map.pmtiles --bbox "$BBOX" --maxzoom "$ZOOM"
 
       - name: Hochladen
         env:

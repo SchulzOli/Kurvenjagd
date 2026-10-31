@@ -4,7 +4,7 @@ Ersetzt zur Laufzeit die öffentlichen Overpass-Server: Die App lädt statt eine
 Dateien je 0,1°-Kachel von einem Speicher mit CDN (oder aus dem Ordner www/data beim Entwickeln).
 
 Aufruf:
-    python scripts/build_data.py <eingabe.osm.pbf> <ausgabe-ordner> [--bbox s,w,n,e]
+    python scripts/build_data.py <eingabe.osm.pbf> <ausgabe-ordner> [--bbox s,w,n,e] [--name "Baden-Württemberg"]
 
 Ausgabe:
     manifest.json            Bauzeit, OSM-Stand, vorhandene Kacheln
@@ -65,7 +65,7 @@ def drivable(tags):
                 or tags.get('motorcycle') in BLOCKED or tags.get('area') == 'yes')
 
 
-def build(src, out, bbox):
+def build(src, out, bbox, region=None):
     t0 = time.time()
     # Gepackte Wege als fertiger JSON-Text: braucht ein Vielfaches weniger Speicher als Python-Listen (wichtig für D-A-CH)
     roads = defaultdict(list)    # (i, j) -> Hauptstraßen
@@ -163,7 +163,7 @@ def build(src, out, bbox):
 
     header = fp.header
     manifest = {
-        'v': FORMAT, 'built': built, 'tile': TILE, 'source': os.path.basename(src),
+        'v': FORMAT, 'built': built, 'tile': TILE, 'source': os.path.basename(src), 'region': region,
         'osm': header.get('osmosis_replication_timestamp') or None,
         'bbox': bbox or None, 'tiles': tiles, 'local': local_tiles,
         'license': 'Daten © OpenStreetMap-Mitwirkende, ODbL',
@@ -183,8 +183,9 @@ if __name__ == '__main__':
     p.add_argument('src')
     p.add_argument('out')
     p.add_argument('--bbox', help='nur Kacheln, die ganz in s,w,n,e liegen (Ränder eines Auszugs sind unvollständig)')
+    p.add_argument('--name', help='Name des Gebiets, zeigt die App bei Punkten außerhalb an (z. B. "Baden-Württemberg")')
     a = p.parse_args()
     box = [float(v) for v in a.bbox.split(',')] if a.bbox else None
     if box and len(box) != 4:
         sys.exit('--bbox braucht vier Werte: s,w,n,e')
-    build(a.src, a.out, box)
+    build(a.src, a.out, box, a.name)
