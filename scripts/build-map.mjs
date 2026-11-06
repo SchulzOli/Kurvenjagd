@@ -109,7 +109,7 @@ async function extract(url, bbox, maxz) {
   }));
 
   const { bytes, unique } = writePmtiles({ tiles, tileType: header.tileType, minZoom: header.minZoom,
-    maxZoom: Math.min(maxz, header.maxZoom), bbox, meta: { ...meta, description: `Kurvenjäger-Ausschnitt ${bbox.join(',')} aus ${url}` } });
+    maxZoom: Math.min(maxz, header.maxZoom), bbox, meta: { ...meta, description: `Kurvenjagd-Ausschnitt ${bbox.join(',')} aus ${url}` } });
   console.log(`${tiles.size} Kacheln, ${unique} verschiedene, ${bytes.length / 1e6 | 0} MB`);
   return bytes;
 }

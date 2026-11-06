@@ -1,8 +1,8 @@
-# Wie Kurvenjäger kurvige Strecken findet
+# Wie Kurvenjagd kurvige Strecken findet
 
 Diese Doku erklärt den Routing-Algorithmus Schritt für Schritt: woher die Daten kommen, wie „Kurvigkeit“ gemessen wird, wie daraus eine Route entsteht und wovon das Ganze abhängt. Alle Zahlen stammen direkt aus dem Code; wo sie stehen, ist jeweils angegeben.
 
-**Kurz gesagt:** Kurvenjäger lädt das Straßennetz aus OpenStreetMap, misst für jedes Straßenstück zwischen zwei Kreuzungen die Kurvenradien und sucht dann mit dem Dijkstra-Algorithmus den Weg, bei dem kurvige Straßen „billiger“ sind als gerade. Wie viel billiger, steuert der Regler „Kurvenlust“.
+**Kurz gesagt:** Kurvenjagd lädt das Straßennetz aus OpenStreetMap, misst für jedes Straßenstück zwischen zwei Kreuzungen die Kurvenradien und sucht dann mit dem Dijkstra-Algorithmus den Weg, bei dem kurvige Straßen „billiger“ sind als gerade. Wie viel billiger, steuert der Regler „Kurvenlust“.
 
 ---
 
@@ -56,14 +56,14 @@ Der eigentliche Algorithmus ([src/router.js](../src/router.js) und [src/nav.js](
 
 ## 2. Abhängigkeiten
 
-Das ist der wichtigste Abschnitt, wenn es um Zuverlässigkeit geht. Kurvenjäger hängt von externen Diensten ab, die wir nicht kontrollieren.
+Das ist der wichtigste Abschnitt, wenn es um Zuverlässigkeit geht. Kurvenjagd hängt von externen Diensten ab, die wir nicht kontrollieren.
 
 ### 2.1 Externe Dienste (Internet)
 
 | Dienst | Wofür | Ohne ihn … | Regeln / Risiko |
 |---|---|---|---|
 | **OpenStreetMap-Daten** (Geofabrik-Auszug D-A-CH, wöchentlich zu Straßenpaketen gebaut) | Die einzige Datenquelle für Straßen, Namen, Einbahnstraßen, Zufahrtsverbote, Ortsnamen, Tankstellen. | … gibt es keine Route. | Lizenz ODbL: Namensnennung „© OpenStreetMap-Mitwirkende“ ist Pflicht (steht in der App). Die **Qualität der Route hängt direkt von der Qualität der Kartierung ab** (siehe [Abschnitt 13](#13-grenzen-und-bekannte-schwächen)). |
-| **Eigener Speicher (CDN)** mit Straßenpaketen und Vektorkarte, Adresse `KJ_DATA_URL` ([src/config.js](../src/config.js)) | Straßen je 0,1°-Kachel, Nebenstraßen, Ortsnamen, Tankstellen/Rasten; die Kartendatei `map.pmtiles`. | … kann keine neue Route in einem noch nicht geladenen Gebiet geplant werden; Cache, Offline-Regionen und gespeicherte Routen funktionieren weiter. | Unser eigener Dienst (z. B. Cloudflare R2): einfache Dateien, keine Warteschlange, Kosten siehe [finanzierung-und-betrieb.md](finanzierung-und-betrieb.md). Gebaut von [.github/workflows/daten.yml](../.github/workflows/daten.yml). |
+| **Eigener Server** (`kurvenjagd.oli-tech.eu/daten/v1/`) mit Straßenpaketen und Vektorkarte, Adresse `KJ_DATA_URL` ([src/config.js](../src/config.js)) | Straßen je 0,1°-Kachel, Nebenstraßen, Ortsnamen, Tankstellen/Rasten; die Kartendatei `map.pmtiles`. | … kann keine neue Route in einem noch nicht geladenen Gebiet geplant werden; Cache, Offline-Regionen und gespeicherte Routen funktionieren weiter. | Unser eigener Dienst (z. B. Cloudflare R2): einfache Dateien, keine Warteschlange, Kosten siehe [finanzierung-und-betrieb.md](finanzierung-und-betrieb.md). Gebaut von [.github/workflows/daten.yml](../.github/workflows/daten.yml). |
 | **Overpass API** (`overpass-api.de` u. a.) | Nur noch beim Entwickeln, wenn keine Straßenpakete da sind. | – | In veröffentlichten Versionen abgeschaltet (Nutzungsregeln der Betreiber erlauben keine Apps mit viel Verkehr). |
 | **Photon** (`photon.komoot.io`, Adresse `KJ_GEOCODER_URL`) | Ortssuche, Ortsnamen für die Punkte (Reverse-Geocoding), Sprachbefehl „Zwischenstopp in …“. | … gibt es keine Suche; Punkte heißen dann nur nach ihren Koordinaten. Das Routing selbst ist nicht betroffen. | Kostenloser Dienst „in vernünftigem Rahmen“; ab einigen tausend Nutzern eigene Instanz. |
 | **AWS Terrain Tiles** (`s3.amazonaws.com/elevation-tiles-prod`, Terrarium-PNG, Quelle Mapzen/Tilezen) | Höhenmodell: Anstieg/Gefälle, Merkmale „steil“ und „bergig“, Höhenprofil. | … gibt es keine Höhenmeter; die Höhen-Merkmale bleiben neutral, die Route wird sonst normal berechnet. | Öffentlicher Datensatz ohne Schlüssel, CORS erlaubt. Quellenangabe der zugrunde liegenden Höhendaten (u. a. SRTM, EU-DEM) nötig. Wird 365 Tage gecacht. |
@@ -346,7 +346,7 @@ Code: [src/dem.js](../src/dem.js), geladen in [src/tiles.js](../src/tiles.js).
 
 Code: `snapToRoad`.
 
-Ein Tipp auf die Karte liegt selten exakt auf einer Straße. Kurvenjäger sucht die **nächstgelegene Stelle auf einer befahrbaren Kante** (Lotfußpunkt auf jedes Liniensegment). Dabei zählen nur Kanten im größten Teilnetz, die nicht gesperrt sind; bei „Autobahn meiden“ also nie eine Autobahn.
+Ein Tipp auf die Karte liegt selten exakt auf einer Straße. Kurvenjagd sucht die **nächstgelegene Stelle auf einer befahrbaren Kante** (Lotfußpunkt auf jedes Liniensegment). Dabei zählen nur Kanten im größten Teilnetz, die nicht gesperrt sind; bei „Autobahn meiden“ also nie eine Autobahn.
 
 **Räumliches Raster:** Damit nicht jede Kante geprüft werden muss, liegen alle Kanten in Zellen von 0,005° (~550 × 370 m), eingetragen in jede Zelle, die ihre Ausdehnung berührt. Gesucht wird ringförmig um den Punkt; sobald der beste Treffer näher liegt als der nächste noch ungeprüfte Ring, ist das Ergebnis sicher das gleiche wie bei der Prüfung aller Kanten. Auf echten Daten (300 Zufallspunkte) identisch, aber ~7× schneller (0,07 statt 0,48 ms pro Punkt); der Vorteil wächst mit der Gebietsgröße. Beim Teilen entstehende Kanten werden sofort ins Raster eingetragen.
 

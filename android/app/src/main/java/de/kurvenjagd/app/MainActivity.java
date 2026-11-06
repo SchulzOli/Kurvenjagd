@@ -1,4 +1,4 @@
-package de.kurvenjaeger.app;
+package de.kurvenjagd.app;
 
 import com.getcapacitor.BridgeActivity;
 

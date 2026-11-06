@@ -1,6 +1,6 @@
 // App-Shell: erst Netz, bei Offline aus dem Cache. Straßenpakete und Karte (data/, Range-Anfragen) laufen vorbei:
 // die App cacht Straßen selbst, Teilantworten (206) kann der Service-Worker-Cache nicht speichern.
-const CACHE = 'kurvenjaeger-v3';
+const CACHE = 'kurvenjagd-v3';
 const SHELL = ['./', 'index.html', 'build/app.js', 'build/app.css', 'build/engine-worker.js', 'manifest.webmanifest', 'icons/icon-192.png'];
 
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));

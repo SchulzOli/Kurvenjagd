@@ -7,7 +7,7 @@ Bitte beschreiben: betroffene Version und Plattform (Android, iOS, Web), Schritt
 ## Was die App verarbeitet
 
 - **Keine Konten, keine Server mit Nutzerdaten.** Routen, Fahrten, GPS-Spuren und das Fahrprofil liegen nur auf dem Gerät.
-- Die App lädt öffentliche Daten: Straßenpakete und Karte vom Projekt-Speicher, Höhendaten (AWS), Wetter (Open-Meteo), Ortssuche (Photon). Dabei werden Kartenausschnitte bzw. Koordinaten an diese Dienste übertragen, aber keine Kennungen.
+- Die App lädt öffentliche Daten: Straßenpakete und Karte vom Projekt-Server (Hetzner, Deutschland), Höhendaten (AWS), Wetter (Open-Meteo), Ortssuche (Photon). Dabei werden Kartenausschnitte bzw. Koordinaten an diese Dienste übertragen, aber keine Kennungen.
 - Spenden laufen über externe Anbieter (Liberapay, GitHub Sponsors) bzw. den In-App-Kauf der Stores; die App sieht keine Zahlungsdaten.
 
 Unterstützt wird jeweils die neueste Version.

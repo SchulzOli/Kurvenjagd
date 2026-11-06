@@ -1,24 +1,20 @@
 {
-  "hinweis": "BEISPIEL (Stufe 1, Android-Beta). Auf dem Datenspeicher monatlich von Hand pflegen; Apple-Konto erst ab iOS (Stufe 3) hinzufügen.",
+  "hinweis": "BEISPIEL (Stufe 1, Android-Beta). Monatlich pflegen und auf den Server laden (server/README.md); Apple-Konto erst ab iOS (Stufe 3) hinzufügen.",
   "monat": "2026-11",
-  "ziel": 10,
-  "eingegangen": 4,
+  "ziel": 5,
+  "eingegangen": 2,
   "kosten": [
-    [
-      "Domain",
-      1.5
-    ],
     [
       "Google-Play-Konto (25 $ einmalig, aufs erste Jahr verteilt)",
       2
     ],
     [
-      "Datenspeicher (bis 10 GB kostenlos)",
+      "Server und Domain (vorhanden)",
       0
     ],
     [
       "Rücklage und Zahlungsgebühren",
-      4
+      3
     ]
   ],
   "links": {

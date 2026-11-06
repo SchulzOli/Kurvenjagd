@@ -1,4 +1,4 @@
-# Kurvenjäger
+# Kurvenjagd
 
 [![Tests](https://github.com/SchulzOli/Kurvenjagd/actions/workflows/ci.yml/badge.svg)](https://github.com/SchulzOli/Kurvenjagd/actions/workflows/ci.yml)
 [![Lizenz: GPL v3](https://img.shields.io/badge/Lizenz-GPL--3.0-blue.svg)](LICENSE)
@@ -13,7 +13,7 @@
 
 **Status:** Läuft und ist im Browser und im Android-Emulator getestet, aber noch nicht im Store. Als Nächstes kommt eine Android-Beta für Baden-Württemberg; Fahrplan und Stand: [docs/veroeffentlichung.md](docs/veroeffentlichung.md).
 
-*English: Kurvenjäger plans twisty motorcycle routes from OpenStreetMap data and navigates them with voice guidance – free, open source (GPL-3.0), no ads, no accounts, everything stays on the device. The UI and docs are in German; issues and pull requests in English are welcome.*
+*English: Kurvenjagd plans twisty motorcycle routes from OpenStreetMap data and navigates them with voice guidance – free, open source (GPL-3.0), no ads, no accounts, everything stays on the device. The UI and docs are in German; issues and pull requests in English are welcome.*
 
 ## Was die App kann
 
@@ -84,7 +84,7 @@ Ein- und ausschaltbar unter „Weitere Einstellungen“ → „Sprachansagen wä
 
 Verstecktes Fenster mit Einblick in die Technik, für Fahrer als Infotainment und für uns zum Debuggen und Optimieren (`src/boxengasse.js`).
 
-- **Freischalten:** 7× schnell auf das Logo „Kurvenjäger“ tippen (wie der Android-Entwicklermodus), alternativ `?boxengasse` an die URL hängen oder während der Fahrt „Boxengasse“ sagen. Danach öffnet die Werkzeug-Taste oben bzw. ein Tipp auf die Info-Zeile in der Fahrt das Fenster. Unter „System“ lässt sie sich wieder sperren.
+- **Freischalten:** 7× schnell auf das Logo „Kurvenjagd“ tippen (wie der Android-Entwicklermodus), alternativ `?boxengasse` an die URL hängen oder während der Fahrt „Boxengasse“ sagen. Danach öffnet die Werkzeug-Taste oben bzw. ein Tipp auf die Info-Zeile in der Fahrt das Fenster. Unter „System“ lässt sie sich wieder sperren.
 - **Bereiche:** Überblick (Pipeline mit echten Zeiten), Route (Kurvenprofil, Kurven-Mix, kurvigste Abschnitte), Netz (Graph, Kurvigkeits-Verteilung, Datenabruf), Fahrt (Live-GPS, Manöver, Ansagen), Profil (gelernte Anpassungen mit Zahlen, Strecken-Eigenschaften je Fahrt), Labor (alle Parameter live ändern und vergleichen), System (Dienste, Plattform, „Diagnose kopieren“), Log.
 
 Optimierungsideen und alle infrage kommenden Datenquellen: [docs/optimierung-und-datenquellen.md](docs/optimierung-und-datenquellen.md). Betrieb, Kosten, Spendenziel und Zahlungswege („zahl, was du willst“): [docs/finanzierung-und-betrieb.md](docs/finanzierung-und-betrieb.md). Alle Abhängigkeiten mit Nutzungsgrenzen und Kosten: [docs/abhaengigkeiten-und-grenzen.md](docs/abhaengigkeiten-und-grenzen.md).
@@ -108,10 +108,10 @@ python scripts/build_data.py freiburg-regbez-latest.osm.pbf data --bbox 47.7,7.7
 node scripts/build-map.mjs data/map.pmtiles --bbox 47.7,7.7,48.5,8.6 --maxzoom 14
 ```
 
-Den OSM-Auszug gibt es bei [Geofabrik](https://download.geofabrik.de/europe/germany/baden-wuerttemberg.html). Ohne `data/` fällt die Entwicklungs-Version auf Overpass zurück. Für ganz D-A-CH baut [.github/workflows/daten.yml](.github/workflows/daten.yml) jeden Montag und lädt nach Cloudflare R2. Veröffentlichte Versionen:
+Den OSM-Auszug gibt es bei [Geofabrik](https://download.geofabrik.de/europe/germany/baden-wuerttemberg.html). Ohne `data/` fällt die Entwicklungs-Version auf Overpass zurück. Den wöchentlichen Bau (Standard: Baden-Württemberg, umstellbar auf D-A-CH) erledigt [.github/workflows/daten.yml](.github/workflows/daten.yml) und lädt per rsync auf den eigenen Server `kurvenjagd.oli-tech.eu` ([server/README.md](server/README.md)). Veröffentlichte Versionen zeigen automatisch dorthin:
 
 ```bash
-KJ_DATA_URL=https://daten.example.org/v1/ npm run build -- --release
+npm run build -- --release
 ```
 
 Optional: `KJ_MAP_URL`, `KJ_GEOCODER_URL` (eigene Photon-Instanz), `KJ_WEATHER_URL` (bezahlter Open-Meteo-Tarif), siehe [src/config.js](src/config.js).
@@ -127,7 +127,7 @@ npm run android    # baut, synchronisiert und öffnet Android Studio → ▶ Run
 APK ohne Android Studio:
 
 ```bash
-npm run apk        # → dist/Kurvenjaeger-debug.apk
+npm run apk        # → dist/Kurvenjagd-debug.apk
 ```
 
 Das Skript nutzt ein portables JDK 21 und das Android SDK aus `D:\Android` oder `%LOCALAPPDATA%\Android` (`jdk-21`, `Sdk`), sonst `JAVA_HOME`/`ANDROID_HOME`. Zum Installieren die APK aufs Handy kopieren und „Installation aus unbekannten Quellen“ erlauben.
@@ -135,8 +135,8 @@ Das Skript nutzt ein portables JDK 21 und das Android SDK aus `D:\Android` oder 
 Signierte Versionen für die Veröffentlichung (Schlüssel und Ablauf: [docs/veroeffentlichung.md](docs/veroeffentlichung.md)):
 
 ```bash
-KJ_DATA_URL=https://daten.example.org/v1/ npm run release:apk   # Beta-APK für GitHub (Spenden-Links)
-KJ_DATA_URL=https://daten.example.org/v1/ npm run release:aab   # AAB für Google Play (Trinkgeld per In-App-Kauf)
+npm run release:apk   # Beta-APK für GitHub (Spenden-Links)
+npm run release:aab   # AAB für Google Play (Trinkgeld per In-App-Kauf)
 ```
 
 ### Im Emulator testen
@@ -155,7 +155,7 @@ Das virtuelle Gerät (Pixel 7, Android 16) liegt in `D:\Android\avd`. Die GPS-Po
 USB-Debugging in den Entwickleroptionen aktivieren, dann:
 
 ```bash
-D:/Android/Sdk/platform-tools/adb install -r dist/Kurvenjaeger-debug.apk
+D:/Android/Sdk/platform-tools/adb install -r dist/Kurvenjagd-debug.apk
 ```
 
 ## iOS-App bauen
@@ -184,7 +184,7 @@ Fehlerberichte, Ideen, Tests auf echten Touren und Pull Requests sind willkommen
 
 ## Unterstützen
 
-Kurvenjäger bleibt für alle kostenlos. Wer mag, hilft mit einem frei gewählten Betrag, die laufenden Kosten (Datenspeicher, Entwicklerkonten) zu tragen – in der App über ♥ „Kurvenjäger unterstützen“. Wie das aufgebaut ist und was der Betrieb kostet: [docs/finanzierung-und-betrieb.md](docs/finanzierung-und-betrieb.md).
+Kurvenjagd bleibt für alle kostenlos. Wer mag, hilft mit einem frei gewählten Betrag, die laufenden Kosten (Datenspeicher, Entwicklerkonten) zu tragen – in der App über ♥ „Kurvenjagd unterstützen“. Wie das aufgebaut ist und was der Betrieb kostet: [docs/finanzierung-und-betrieb.md](docs/finanzierung-und-betrieb.md).
 
 ## Lizenz
 

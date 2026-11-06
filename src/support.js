@@ -1,4 +1,4 @@
-// „Kurvenjäger unterstützen“: zahl, was du willst. Nichts wird freigeschaltet.
+// „Kurvenjagd unterstützen“: zahl, was du willst. Nichts wird freigeschaltet.
 // - Store-Versionen (Google Play, App Store): nur Trinkgeld per In-App-Kauf (cordova-plugin-purchase),
 //   keine externen Spenden-Links – das verlangen die Regeln beider Stores.
 // - Web und F-Droid: Links zu Liberapay, GitHub Sponsors und Überweisung.
@@ -71,10 +71,10 @@ export function initSupport({ flash }) {
   // ---------- Anzeige ----------
 
   function goalHtml() {
-    if (!goal) return '<p class="dlgnote">Kurvenjäger ist kostenlos, ohne Werbung und ohne Tracking. Wer mag, gibt einen frei gewählten Betrag für die laufenden Kosten.</p>';
+    if (!goal) return '<p class="dlgnote">Kurvenjagd ist kostenlos, ohne Werbung und ohne Tracking. Wer mag, gibt einen frei gewählten Betrag für die laufenden Kosten.</p>';
     const pct = Math.min(100, Math.round((goal.eingegangen || 0) / (goal.ziel || 1) * 100));
     const monat = goal.monat ? new Date(`${goal.monat}-01`).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) : '';
-    return `<p class="dlgnote">Kurvenjäger ist kostenlos, ohne Werbung und ohne Tracking. Spenden decken nur die laufenden Kosten – nichts wird freigeschaltet.</p>
+    return `<p class="dlgnote">Kurvenjagd ist kostenlos, ohne Werbung und ohne Tracking. Spenden decken nur die laufenden Kosten – nichts wird freigeschaltet.</p>
       <div class="goal"><div class="gh"><b>${eur(goal.eingegangen || 0)} von ${eur(goal.ziel)}</b><span>${esc(monat)}</span></div>
         <div class="prog"><span style="width:${pct}%"></span></div></div>
       ${goal.kosten?.length ? `<ul class="costs">${goal.kosten.map(([label, v]) => `<li><span>${esc(label)}</span><span>${eur(v)}</span></li>`).join('')}</ul>` : ''}`;
@@ -85,7 +85,7 @@ export function initSupport({ flash }) {
       const products = TIPS.map(id => iap?.store.get(id)).filter(p => p?.canPurchase);
       const monthly = android() ? iap?.store.get(MONTHLY) : null, subscribed = !!monthly && iap.store.owned(MONTHLY);
       const sub = !monthly ? '' : subscribed
-        ? `<h3>Monatlich</h3><p class="dlgnote">Du unterstützt Kurvenjäger monatlich – danke! ♥</p><button data-manage>Abo in Google Play verwalten</button>`
+        ? `<h3>Monatlich</h3><p class="dlgnote">Du unterstützt Kurvenjagd monatlich – danke! ♥</p><button data-manage>Abo in Google Play verwalten</button>`
         : monthly.canPurchase ? `<h3>Monatlich unterstützen</h3><button class="big primary" data-tip="${MONTHLY}">${esc(monthly.pricing?.price || '')} im Monat</button>
           <p class="dlgnote">Jederzeit in Google Play kündbar. Schaltet nichts frei.</p>` : '';
       if (!products.length && !sub) return `<p class="dlgnote">${globalThis.CdvPurchase && !iap?.ready ? 'Trinkgeld wird geladen …' : 'Trinkgeld ist gerade nicht verfügbar (der Store antwortet nicht oder die App stammt nicht aus dem Store). Danke, dass du es versuchst!'}</p>`;
@@ -96,7 +96,7 @@ export function initSupport({ flash }) {
     const rows = [
       l.liberapay && `<a class="way" href="${esc(l.liberapay)}" target="_blank" rel="noopener"><b>Liberapay</b><span>Betrag frei wählbar, einmalig oder regelmäßig</span></a>`,
       l.github && `<a class="way" href="${esc(l.github)}" target="_blank" rel="noopener"><b>GitHub Sponsors</b><span>einmalig oder monatlich</span></a>`,
-      l.iban && `<div class="way"><b>Überweisung / Dauerauftrag</b><span>${esc(l.inhaber || '')}<br><span class="mono">${esc(l.iban)}</span><br>Verwendungszweck: Kurvenjäger</span></div>`,
+      l.iban && `<div class="way"><b>Überweisung / Dauerauftrag</b><span>${esc(l.inhaber || '')}<br><span class="mono">${esc(l.iban)}</span><br>Verwendungszweck: Kurvenjagd</span></div>`,
     ].filter(Boolean);
     return rows.length ? `<h3>So kannst du unterstützen</h3>${rows.join('')}` : '<p class="dlgnote">Spendenwege werden gerade eingerichtet.</p>';
   }
@@ -146,7 +146,7 @@ App-Version ${pkg.version} · ${Capacitor.getPlatform()} · ${ch}`;
       try { state = localStorage.getItem(HINT); } catch { return; }
       if (state || rides < 5) return;
       try { localStorage.setItem(HINT, 'shown'); } catch { /* egal */ }
-      flash('Gefällt dir Kurvenjäger? Unter „Unterstützen“ kannst du freiwillig etwas beitragen.');
+      flash('Gefällt dir Kurvenjagd? Unter „Unterstützen“ kannst du freiwillig etwas beitragen.');
     },
   };
 }

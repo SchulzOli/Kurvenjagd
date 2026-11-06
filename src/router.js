@@ -832,7 +832,7 @@ export function toGPX(coords, name, wpts = []) {
   const pts = coords.map(([lat, lon]) => `<trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}"/>`).join('\n');
   const wp = wpts.map(w => `<wpt lat="${w.lat.toFixed(6)}" lon="${w.lon.toFixed(6)}"><name>${esc(w.name)}</name></wpt>\n`).join('');
   return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Kurvenjaeger" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="Kurvenjagd" xmlns="http://www.topografix.com/GPX/1/1">
 ${wp}<trk><name>${esc(name)}</name><trkseg>
 ${pts}
 </trkseg></trk>

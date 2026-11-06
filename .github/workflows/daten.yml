@@ -1,5 +1,5 @@
-# Wöchentlicher Bau der Kurvenjäger-Daten: Straßenpakete und Vektorkarte, hochgeladen in den eigenen
-# Speicher (Cloudflare R2, kein Entgelt für Datenabfluss). Gebiet: Standard Baden-Württemberg (Beta),
+# Wöchentlicher Bau der Kurvenjagd-Daten: Straßenpakete und Vektorkarte, hochgeladen auf den eigenen
+# Server (https://kurvenjagd.oli-tech.eu/daten/v1/, Einrichtung: server/README.md). Gebiet: Standard Baden-Württemberg (Beta),
 # per Repository-Variablen umstellbar, z. B. auf D-A-CH:
 #   DATEN_PBF  = https://download.geofabrik.de/europe/dach-latest.osm.pbf
 #   DATEN_NAME = Deutschland, Österreich und die Schweiz
@@ -8,8 +8,8 @@
 # Kostenlos für öffentliche Repositories. Die App liest die Daten unter KJ_DATA_URL (scripts/build.mjs).
 #
 # Einmalig in den Repository-Einstellungen anlegen (Settings → Secrets and variables → Actions):
-#   Secrets:   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET
-#   Variable:  DATEN_AKTIV = true   (ohne sie läuft der Job nicht – z. B. in Forks)
+#   Secrets:   SERVER_HOST, SERVER_USER, SERVER_SSH_KEY, SERVER_KNOWN_HOSTS   (siehe server/README.md)
+#   Variable:  SERVER_AKTIV = true   (ohne sie läuft der Job nicht – z. B. in Forks)
 name: Daten bauen
 
 on:
@@ -19,7 +19,7 @@ on:
 
 jobs:
   daten:
-    if: vars.DATEN_AKTIV == 'true'
+    if: vars.SERVER_AKTIV == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 300
     env:
@@ -58,16 +58,16 @@ jobs:
           curl -sSfL https://github.com/protomaps/go-pmtiles/releases/download/v1.31.2/go-pmtiles_1.31.2_Linux_x86_64.tar.gz | tar -xz -C /usr/local/bin pmtiles
           node scripts/build-map.mjs out/map.pmtiles --bbox "$BBOX" --maxzoom "$ZOOM"
 
-      - name: Hochladen
+      - name: Hochladen (eigener Server, rsync)
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
+          SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
+          ZIEL: ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
         run: |
-          S3="aws s3 --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
-          DEST="s3://${{ secrets.R2_BUCKET }}/$PREFIX"
-          # Kacheln zuerst, Manifest zuletzt: Apps sehen erst dann den neuen Stand, wenn alles da ist
-          $S3 sync out/roads "$DEST/roads" --delete --content-type application/json --content-encoding gzip --cache-control "public, max-age=86400"
-          $S3 sync out/local "$DEST/local" --delete --content-type application/json --content-encoding gzip --cache-control "public, max-age=86400"
-          $S3 cp out/map.pmtiles "$DEST/map.pmtiles" --content-type application/octet-stream --cache-control "public, max-age=86400"
-          $S3 cp out/manifest.json "$DEST/manifest.json" --content-type application/json --cache-control "public, max-age=3600"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/kurvenjagd && chmod 600 ~/.ssh/kurvenjagd
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          SSH="ssh -i $HOME/.ssh/kurvenjagd -o BatchMode=yes"
+          # erst in einen Zwischenordner, dann auf dem Server in einem Rutsch umschalten (server/kurvenjagd-deploy.sh)
+          rsync -a --delete -e "$SSH" out/ "$ZIEL:daten/$PREFIX.neu/"
+          $SSH "$ZIEL" "umschalten $PREFIX"

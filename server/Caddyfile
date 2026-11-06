@@ -1,0 +1,36 @@
+# Alternative zu nginx (nicht erprobt, nginx-Variante bevorzugen): Caddy holt das HTTPS-Zertifikat selbst.
+# Einrichtung: server/README.md. Benötigt Caddy ≥ 2.8 (log_skip).
+kurvenjagd.oli-tech.eu {
+	# Daten für die App (öffentlich, CORS für alle Herkünfte, Range kann Caddy von sich aus)
+	handle /daten/* {
+		root * /srv/kurvenjagd
+		header {
+			Access-Control-Allow-Origin "*"
+			Access-Control-Allow-Headers "Range"
+			Access-Control-Expose-Headers "Content-Length, Content-Range, ETag"
+			Cache-Control "public, max-age=86400"
+		}
+		@preflight method OPTIONS
+		respond @preflight 204
+		file_server
+	}
+	# Website
+	handle {
+		root * /srv/kurvenjagd/site
+		file_server
+	}
+	# Nur Abrufe von manifest.json protokollieren, IP gekürzt (für die grobe Zahl aktiver Geräte)
+	@kein_manifest not path_regexp ^/daten/v\d+/manifest\.json$
+	log_skip @kein_manifest
+	log {
+		output file /var/log/caddy/kurvenjagd-manifest.log {
+			roll_keep_for 336h
+		}
+		format filter {
+			fields {
+				request>remote_ip ip_mask 24 48
+				request>client_ip ip_mask 24 48
+			}
+		}
+	}
+}

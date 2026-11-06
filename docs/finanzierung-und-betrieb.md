@@ -1,8 +1,8 @@
 # Finanzierung und Betrieb
 
-Grundsatz: **Kurvenjäger ist für alle kostenlos und Open Source.** Es gibt keine bezahlten Funktionen, keine Werbung und kein Konto. Wer mag, gibt einen frei gewählten Betrag („zahl, was du willst“). Das Spendenziel ist genau das, was der Betrieb kostet, plus ein Puffer.
+Grundsatz: **Kurvenjagd ist für alle kostenlos und Open Source.** Es gibt keine bezahlten Funktionen, keine Werbung und kein Konto. Wer mag, gibt einen frei gewählten Betrag („zahl, was du willst“). Das Spendenziel ist genau das, was der Betrieb kostet, plus ein Puffer.
 
-Stand der Preise und Regeln: Oktober 2026. Alle Beträge sind grobe Schätzungen; vor dem Start bei den Anbietern prüfen.
+Stand der Preise und Regeln: November 2026. Betrieb auf dem vorhandenen Hetzner-Cloud-Server unter `kurvenjagd.oli-tech.eu` (Einrichtung: [server/README.md](../server/README.md)). Alle Beträge sind grobe Schätzungen; vor dem Start bei den Anbietern prüfen.
 
 ---
 
@@ -12,15 +12,15 @@ Stand der Preise und Regeln: Oktober 2026. Alle Beträge sind grobe Schätzungen
 
 | Vorher | Problem bei einer öffentlichen App | Ersatz | Server nötig? |
 |---|---|---|---|
-| Kartenbild von `tile.openstreetmap.org` | Verteilen einer App, die diese Kacheln lädt, ist ohne Erlaubnis verboten, Offline-Downloads ebenfalls | ✅ Eigene Vektorkarte als **eine PMTiles-Datei** (Protomaps, Open Source) für D-A-CH auf einem Speicher mit CDN, hell/dunkel, Geländeschattierung aus dem Höhenmodell statt OpenTopoMap | nein, nur Speicher |
-| Straßendaten von Overpass (öffentliche Server) | Betreiber (FOSSGIS) erlaubt keine Dienste mit viel Verkehr; Server-Adressen sollen nicht fest in Apps stehen | ✅ **Vorgebaute Straßenpakete** je 0,1°-Kachel, wöchentlich aus dem Geofabrik-Auszug gebaut ([scripts/build_data.py](../scripts/build_data.py), [.github/workflows/daten.yml](../.github/workflows/daten.yml)) | nein: Bau per GitHub Actions, Ablage im Speicher |
+| Kartenbild von `tile.openstreetmap.org` | Verteilen einer App, die diese Kacheln lädt, ist ohne Erlaubnis verboten, Offline-Downloads ebenfalls | ✅ Eigene Vektorkarte als **eine PMTiles-Datei** (Protomaps, Open Source) für D-A-CH auf dem eigenen Server, hell/dunkel, Geländeschattierung aus dem Höhenmodell statt OpenTopoMap | nur Webserver für Dateien |
+| Straßendaten von Overpass (öffentliche Server) | Betreiber (FOSSGIS) erlaubt keine Dienste mit viel Verkehr; Server-Adressen sollen nicht fest in Apps stehen | ✅ **Vorgebaute Straßenpakete** je 0,1°-Kachel, wöchentlich aus dem Geofabrik-Auszug gebaut ([scripts/build_data.py](../scripts/build_data.py), [.github/workflows/daten.yml](../.github/workflows/daten.yml)) | nein: Bau per GitHub Actions, Ablage auf dem eigenen Server |
 | Tankstellen/Cafés per Overpass | wie oben | ✅ In die Straßenpakete aufgenommen (funktioniert damit auch offline) | nein |
 | Ortssuche über `photon.komoot.io` | erlaubt „in vernünftigem Rahmen“, viel Verkehr wird gedrosselt oder gesperrt | anfangs komoot, später **eigene Photon-Instanz** nur für D-A-CH (Adresse per `KJ_GEOCODER_URL` umstellbar ✅) | ab ca. 5.000 Nutzern |
 | Wetter über Open-Meteo (frei) | frei nur nicht-kommerziell; ob eine spendenfinanzierte App zählt, ist offen | **Bei Open-Meteo nachfragen** ([Entwurf der Anfrage](anfrage-open-meteo.md)); sonst bezahlter Tarif (`KJ_WEATHER_URL` ✅) oder Open-Meteo selbst betreiben (Open Source) | nein |
 | Höhenmodell AWS Terrain Tiles | kostenlos (Open-Data-Programm von AWS) | bleibt | nein |
 
 Damit besteht der Betrieb aus:
-- **Speicher mit CDN** für Karte und Straßenpakete (Cloudflare R2: keine Kosten für Datenabfluss, 10 GB und 10 Mio. Lesezugriffe im Monat frei),
+- dem **eigenen Hetzner-Cloud-Server** als Webserver für Website, Karte und Straßenpakete (20 TB Traffic im Monat inklusive; ein vorhandener Server kostet nichts extra),
 - einem **wöchentlichen Bau-Job** (GitHub Actions, kostenlos für öffentliche Repos),
 - ab einer gewissen Größe **einem kleinen Server** für die Ortssuche,
 - **Entwicklerkonten** der Stores.
@@ -32,21 +32,25 @@ Damit besteht der Betrieb aus:
 ### Annahmen
 
 - Ein aktiver Nutzer im Monat plant ~4 Touren und fährt ~2: ca. **1.200 Dateiabrufe** (Kartenkacheln + Straßenpakete), auf dem Gerät 7–30 Tage gecacht.
-- Die Karte wird über einen kleinen Cloudflare Worker ausgeliefert: frei bis 100.000 Abrufe am Tag, danach 5 $/Monat inklusive 10 Mio., dann 0,30 $ je Million. Etwa 30 % der Abrufe gehen bis zum Speicher durch (0,36 $ je Million über den Freibetrag).
-- Speicher (gemessen 10/2026): Karte D-A-CH bis Zoom 14 4,9 GB, Straßenpakete ≈ 0,8 GB → im Freibetrag (10 GB). Beta Baden-Württemberg: 0,47 GB + 59 MB.
+- Auslieferung vom eigenen Hetzner-Cloud-Server: im Schnitt ~15 KB je Abruf → ~18 MB je Nutzer und Monat; 100.000 Nutzer ≈ 1,8 TB von 20 TB inklusive. Ein vorhandener Server kostet nichts extra; ein eigener nur dafür ca. 5,50 €/Monat (CX23).
+- Platz (gemessen 10/2026): Karte D-A-CH bis Zoom 14 4,9 GB, Straßenpakete ≈ 0,8 GB, beim Umschalten kurz doppelt. Beta Baden-Württemberg: 0,47 GB + 59 MB.
+- Domain: `oli-tech.eu` ist vorhanden, Subdomain kostet nichts.
 - Ortssuche: bis 5.000 Nutzer komoot; danach Server mit 16 GB RAM (~20 €, nach den Hetzner-Preiserhöhungen 2026); ab 50.000 Nutzer größer oder zwei (~40 €).
 - Wetter: ~6 Abfragen je Nutzer und Monat (eine Abfrage deckt die ganze Route). Bezahlter Open-Meteo-Tarif nur falls nötig, ca. 29 €/Monat (bis 1 Mio. Abfragen).
-- Fix: Apple-Entwicklerkonto 99 $/Jahr (~7,50 €/Monat), Domain (~1,50 €/Monat). Google Play einmalig 25 $, F-Droid kostenlos.
+- Fix: Apple-Entwicklerkonto 99 $/Jahr (~7,50 €/Monat) – erst ab iOS (Stufe 3). Google Play einmalig 25 $, F-Droid kostenlos.
 
 ### Ergebnis
 
-| Aktive Nutzer/Monat | Fix | CDN/Speicher | Ortssuche | Summe | mit Wetter-Tarif |
+| Aktive Nutzer/Monat | Apple (ab iOS) | Server | Ortssuche | Summe | mit Wetter-Tarif |
 |---:|---:|---:|---:|---:|---:|
-| 1.000 | 9 € | 0 € | 0 € | **9 €** | 38 € |
-| 5.000 | 9 € | 4,50 € | 0 € | **14 €** | 43 € |
-| 10.000 | 9 € | 5 € | 20 € | **34 €** | 63 € |
-| 50.000 | 9 € | 20,50 € | 20 € | **50 €** | 79 € |
-| 100.000 | 9 € | 42 € | 40 € | **91 €** | 120 € |
+| Beta (Android) | – | 0 € | 0 € | **0 €** (+ 25 $ Google Play einmalig) | ~30 € |
+| 1.000 | 7,50 € | 0 € | 0 € | **7,50 €** | ~37 € |
+| 5.000 | 7,50 € | 0 € | 0 € | **7,50 €** | ~37 € |
+| 10.000 | 7,50 € | 0 € | 20 € | **27,50 €** | ~57 € |
+| 50.000 | 7,50 € | 0 € (≈ 0,9 TB) | 20 € | **27,50 €** | ~57 € |
+| 100.000 | 7,50 € | 0 € (≈ 1,8 TB) | 40 € | **47,50 €** | ~77 € |
+
+„Server 0 €“ gilt für den vorhandenen Hetzner-Server; ein eigener Server nur für Kurvenjagd kostet ca. 5,50 €/Monat mehr.
 
 Nicht enthalten: Arbeitszeit, Werbung für die App, Steuerberatung.
 
@@ -56,15 +60,16 @@ Nicht enthalten: Arbeitszeit, Werbung für die App, Steuerberatung.
 
 | Aktive Nutzer | Spendenziel/Monat | mit Wetter-Tarif | Bei 3 € je Spende nötig |
 |---:|---:|---:|---:|
-| 1.000 | **15 €** | 50 € | 5 Unterstützer (0,5 %) |
-| 5.000 | **20 €** | 60 € | 7 (0,14 %) |
-| 10.000 | **45 €** | 85 € | 15 (0,15 %) |
-| 50.000 | **70 €** | 105 € | 24 (0,05 %) |
-| 100.000 | **125 €** | 160 € | 42 (0,04 %) |
+| Beta (Android) | **5 €** (Google-Play-Gebühr aufs erste Jahr verteilt + Rücklage) | 40 € | 2 Unterstützer |
+| 1.000 | **10 €** | 50 € | 4 (0,4 %) |
+| 5.000 | **10 €** | 50 € | 4 (0,08 %) |
+| 10.000 | **40 €** | 80 € | 14 (0,14 %) |
+| 50.000 | **40 €** | 80 € | 14 (0,03 %) |
+| 100.000 | **65 €** | 105 € | 22 (0,02 %) |
 
 Die Kosten wachsen deutlich langsamer als die Nutzerzahl, weil fast alles auf dem Gerät gerechnet wird. Schon wenn einer von 500 Nutzern ein paar Euro im Monat gibt, ist der Betrieb bezahlt.
 
-Für die App: Das aktuelle Ziel und der Stand stehen öffentlich in einer kleinen JSON-Datei auf dem CDN (`spendenziel.json`: Ziel, eingegangen, Monat). Die App zeigt daraus einen Fortschrittsbalken unter „Unterstützen“. Monatlich von Hand aktualisieren; ein Konto oder Tracking braucht es nicht.
+Für die App: Das aktuelle Ziel und der Stand stehen öffentlich in einer kleinen JSON-Datei auf dem eigenen Server (`spendenziel.json`: Ziel, eingegangen, Monat). Die App zeigt daraus einen Fortschrittsbalken unter „Unterstützen“. Monatlich von Hand aktualisieren; ein Konto oder Tracking braucht es nicht.
 
 ---
 
@@ -112,7 +117,7 @@ Die App-Version erkennt ihren Vertriebsweg beim Bauen (Build-Variable) und zeigt
 
 ### Umsetzung in der App ✅
 
-Code: [src/support.js](../src/support.js). Erreichbar über „♥ Kurvenjäger unterstützen“ in den Einstellungen und in der Bibliothek, dazu einmalig ein Hinweis nach der fünften gespeicherten Fahrt. Nichts wird freigeschaltet.
+Code: [src/support.js](../src/support.js). Erreichbar über „♥ Kurvenjagd unterstützen“ in den Einstellungen und in der Bibliothek, dazu einmalig ein Hinweis nach der fünften gespeicherten Fahrt. Nichts wird freigeschaltet.
 
 - **Vertriebsweg** beim Bauen: `KJ_CHANNEL=web | fdroid | store` (ohne Angabe: nativ `store`, Browser `web`).
 - **`store`** (Google Play, App Store): nur Trinkgeld-Knöpfe per In-App-Kauf über `cordova-plugin-purchase`, **keine externen Links**. Verbrauchsprodukte `trinkgeld_2`, `trinkgeld_5`, `trinkgeld_10`, `trinkgeld_25` in der Play Console bzw. App Store Connect anlegen (Preise z. B. 1,99 / 4,99 / 9,99 / 24,99 €). Kauf wird sofort abgeschlossen, keine Belegprüfung nötig. Nur Google Play zusätzlich: Abo `unterstuetzer_monatlich` (z. B. 1,99 €/Monat, jederzeit kündbar) – bei Apple nicht, weil Abos dort einen fortlaufenden Gegenwert bieten müssen. Ohne angelegte Produkte oder außerhalb des Stores zeigt die App „gerade nicht verfügbar“.
@@ -130,7 +135,7 @@ Code: [src/support.js](../src/support.js). Erreichbar über „♥ Kurvenjäger 
 
 ## 6. Reihenfolge
 
-1. **Vor der Veröffentlichung (Pflicht):** ✅ Kartenbild auf eigene PMTiles umgestellt, ✅ Straßenpakete statt Overpass. Offen: Cloudflare-R2-Speicher und GitHub-Repository einrichten (Secrets für [daten.yml](../.github/workflows/daten.yml)), Domain, Open-Meteo anfragen, Release mit `KJ_DATA_URL` bauen.
+1. **Vor der Veröffentlichung (Pflicht):** ✅ Kartenbild auf eigene PMTiles umgestellt, ✅ Straßenpakete statt Overpass. Offen: Server nach [server/README.md](../server/README.md) einrichten (Subdomain, nginx, Zugang für die Workflows), Open-Meteo anfragen, Release bauen (zeigt automatisch auf `kurvenjagd.oli-tech.eu`).
 2. Liberapay-Konto, „Unterstützen“-Bildschirm mit Spendenziel aus `spendenziel.json`, F-Droid-Eintrag.
 3. Store-Versionen mit In-App-Trinkgeld.
 4. Ab ~5.000 aktiven Nutzern eigene Photon-Instanz.
@@ -142,7 +147,7 @@ Code: [src/support.js](../src/support.js). Erreichbar über „♥ Kurvenjäger 
 - Overpass API: <https://wiki.openstreetmap.org/wiki/Overpass_API>
 - Photon: <https://github.com/komoot/photon>
 - Open-Meteo Bedingungen und Preise: <https://open-meteo.com/en/terms>, <https://open-meteo.com/en/pricing>
-- Cloudflare R2 Preise: <https://developers.cloudflare.com/r2/pricing>
+- Hetzner Cloud: <https://www.hetzner.com/cloud>
 - Protomaps Downloads: <https://docs.protomaps.com/basemaps/downloads>
 - Hetzner Preiserhöhungen 2026: <https://www.tomshardware.com/tech-industry/hetzner-to-raise-prices-by-up-to-37-percent-from-april-1>
 - Google Play Zahlungsrichtlinie: <https://play.google.com/about/monetization-ads/payments>

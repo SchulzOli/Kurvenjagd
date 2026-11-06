@@ -24,68 +24,59 @@ Kosten, Nutzungsgrenzen und Schwellen: [abhaengigkeiten-und-grenzen.md](abhaengi
   | D-A-CH | ≈ 0,8 GB (hochgerechnet) | 4,89 GB | 10,0 GB | – |
 
   Route Bad Urach → Münsingen aus den BW-Paketen: 2 s ab leerem Cache, 16 Dateien, kein Overpass.
-- ✅ **„Über Kurvenjäger“** in der App (Einstellungen): Version, Datenschutz in Kürze, Links zu Datenschutzerklärung und Impressum, Datenquellen, Lizenzen, Quellcode.
-- ✅ **Website-Entwürfe** in [site/](../site/) (Start, Datenschutz, Impressum) mit Workflow [website.yml](../.github/workflows/website.yml) für GitHub Pages. Lokal ansehen: `node scripts/serve.mjs` → <http://localhost:8765/site/>.
+- ✅ **„Über Kurvenjagd“** in der App (Einstellungen): Version, Datenschutz in Kürze, Links zu Datenschutzerklärung und Impressum, Datenquellen, Lizenzen, Quellcode.
+- ✅ **Website-Entwürfe** in [site/](../site/) (Start, Datenschutz, Impressum) mit Workflow [website.yml](../.github/workflows/website.yml), der sie auf den eigenen Server lädt. Lokal ansehen: `node scripts/serve.mjs` → <http://localhost:8765/site/>.
 - ✅ **Signierte Android-Version** ([scripts/release-android.mjs](../scripts/release-android.mjs)): AAB für Google Play (Vertriebsweg „store“, Trinkgeld per In-App-Kauf) und APK für die Beta über GitHub (Weg „web“, Spenden-Links). Version kommt aus `package.json`. Mit Wegwerf-Schlüssel getestet.
 - ✅ **Unterstützen-Bildschirm** geprüft: Web zeigt Monatsziel, Kosten, Liberapay/Überweisung, Feedback; Android (Store-Weg) zeigt ohne angelegte Produkte „Trinkgeld ist gerade nicht verfügbar“.
 - ✅ Ortssuche bevorzugt Orte nahe dem Kartenausschnitt (vorher landete „Münsingen“ in der Schweiz).
 
 ## Stufe 1: was du tun musst
 
-### 1. Domain und Datenspeicher (Cloudflare R2)
+### 1. Name und Server
 
-1. ⬜ **Markenrecherche** zum Namen „Kurvenjäger“ (DPMAregister, EUIPO TMview) – vor Domain und Store-Eintrag.
-2. ⬜ **Domain** registrieren (z. B. `kurvenjaeger.de`) und in Cloudflare hinzufügen (Nameserver auf Cloudflare umstellen).
-3. ⬜ **R2 aktivieren** (Cloudflare-Dashboard → R2; ein Zahlungsmittel muss hinterlegt werden, im Freikontingent fallen keine Kosten an) und einen Bucket anlegen, z. B. `kurvenjaeger-daten`.
-4. ⬜ Bucket → Settings → **Custom Domain**: `daten.kurvenjaeger.de`.
-5. ⬜ Bucket → Settings → **CORS-Richtlinie**:
-   ```json
-   [{ "AllowedOrigins": ["https://localhost", "capacitor://localhost", "https://schulzoli.github.io", "https://kurvenjaeger.de"],
-      "AllowedMethods": ["GET", "HEAD"], "AllowedHeaders": ["Range"],
-      "ExposeHeaders": ["Content-Length", "Content-Range", "ETag"], "MaxAgeSeconds": 86400 }]
-   ```
-6. ⬜ R2 → **API-Token** erstellen („Object Read & Write“, nur dieser Bucket). Notieren: Access Key ID, Secret Access Key, Account ID.
+1. ⬜ **Markenrecherche** zum Namen „Kurvenjagd“ (DPMAregister, EUIPO TMview; Klassen 9, 42, 39) – vor dem Store-Eintrag.
+2. ⬜ **Server einrichten** nach [server/README.md](../server/README.md): DNS-Eintrag `kurvenjagd.oli-tech.eu`, nginx mit HTTPS, Benutzer und SSH-Schlüssel nur für die Workflows.
 
-### 2. Datenbau auf GitHub
+### 2. Datenbau und Website auf GitHub
 
-1. ⬜ Repository → Settings → Secrets and variables → Actions → **Secrets**: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`.
-2. ⬜ Dort unter **Variables**: `DATEN_AKTIV` = `true`. (Gebiet bleibt Baden-Württemberg, solange `DATEN_PBF` usw. nicht gesetzt sind.)
-3. ⬜ Actions → „Daten bauen“ → **Run workflow**. Danach prüfen: <https://daten.kurvenjaeger.de/v1/manifest.json> lädt und nennt `"region":"Baden-Württemberg"`.
-   - Hinweis: Der Schritt „Auszug eindampfen“ (osmium) ist nur auf GitHub lauffähig und dort noch nicht erprobt; beim ersten Lauf das Protokoll ansehen.
-4. ⬜ `spendenziel.json` (Vorlage: [spendenziel.beispiel.json](spendenziel.beispiel.json)) mit echten Links nach `v1/spendenziel.json` in den Bucket hochladen. Der Datenbau löscht sie nicht.
+1. ⬜ Repository → Settings → Secrets and variables → Actions → **Secrets**: `SERVER_HOST`, `SERVER_USER`, `SERVER_SSH_KEY`, `SERVER_KNOWN_HOSTS` (Inhalte siehe [server/README.md](../server/README.md#5-github)).
+2. ⬜ Dort unter **Variables**: `SERVER_AKTIV` = `true`. (Gebiet bleibt Baden-Württemberg, solange `DATEN_PBF` usw. nicht gesetzt sind.)
+3. ⬜ Actions → „Daten bauen“ und „Website“ → **Run workflow**. Danach prüfen: <https://kurvenjagd.oli-tech.eu/daten/v1/manifest.json> nennt `"region":"Baden-Württemberg"`, <https://kurvenjagd.oli-tech.eu/> zeigt die Website.
+   - Hinweis: Der Schritt „Auszug eindampfen“ (osmium) und der Upload per rsync sind noch nicht auf GitHub erprobt; beim ersten Lauf das Protokoll ansehen.
+4. ⬜ `spendenziel.json` (Vorlage: [spendenziel.beispiel.json](spendenziel.beispiel.json)) mit echten Links auf den Server laden (Befehl in [server/README.md](../server/README.md#7-spendenziel)). Der Datenbau übernimmt sie in jeden neuen Stand.
 
 ### 3. Website mit Datenschutz und Impressum
 
-1. ⬜ In [site/impressum.html](../site/impressum.html) und [site/datenschutz.html](../site/datenschutz.html) die gelb markierten **Platzhalter** ersetzen (Name, Anschrift, E-Mail, Datum, Datenspeicher-Adresse, Aufsichtsbehörde) und den Entwurfs-Hinweis entfernen. Im Zweifel rechtlich prüfen lassen.
-2. ⬜ In [site/index.html](../site/index.html) den Liberapay-Link ersetzen.
-3. ⬜ Repository → Settings → **Pages** → Source: „GitHub Actions“. Nach dem nächsten Push in `site/` ist die Seite unter <https://schulzoli.github.io/Kurvenjagd/> erreichbar. (Eigene Domain später: Pages → Custom domain, dann `KJ_SITE_URL` beim App-Bau setzen.)
+1. ⬜ In [site/impressum.html](../site/impressum.html) und [site/datenschutz.html](../site/datenschutz.html) die gelb markierten **Platzhalter** ersetzen (Name, Anschrift, E-Mail, Datum, Aufsichtsbehörde) und den Entwurfs-Hinweis entfernen. Im Zweifel rechtlich prüfen lassen.
+2. ⬜ In [site/index.html](../site/index.html) den Liberapay-Link ersetzen. Jeder Push in `site/` lädt die Website neu hoch.
 
 ### 4. Spenden und Wetter
 
-1. ⬜ **Liberapay**-Konto anlegen (Team oder Person „Kurvenjäger“), Link in `spendenziel.json` und auf der Website eintragen. Optional GitHub Sponsors.
+1. ⬜ **Liberapay**-Konto anlegen (Team oder Person „Kurvenjagd“), Link in `spendenziel.json` und auf der Website eintragen. Optional GitHub Sponsors.
 2. ⬜ **Anfrage an Open-Meteo** senden ([Entwurf](anfrage-open-meteo.md)) und Antwort hier vermerken.
 
 ### 5. Signaturschlüssel und Beta-APK
 
 1. ⬜ **Schlüssel erzeugen** (einmalig, gut sichern – ohne ihn keine Updates der GitHub-APK):
    ```bash
-   keytool -genkeypair -v -keystore kurvenjaeger-release.jks -alias kurvenjaeger -keyalg RSA -keysize 4096 -validity 10000
+   keytool -genkeypair -v -keystore kurvenjagd-release.jks -alias kurvenjagd -keyalg RSA -keysize 4096 -validity 10000
    ```
    `keytool` liegt im JDK (`D:\Android\jdk-21…\bin`). Die `.jks`-Datei außerhalb des Repos aufbewahren und zusätzlich sichern (z. B. Passwort-Manager + Backup).
 2. ⬜ `android/keystore.properties` anlegen (wird nicht eingecheckt):
    ```properties
-   storeFile=C:/Pfad/zu/kurvenjaeger-release.jks
+   storeFile=C:/Pfad/zu/kurvenjagd-release.jks
    storePassword=…
-   keyAlias=kurvenjaeger
+   keyAlias=kurvenjagd
    keyPassword=…
    ```
 3. ⬜ **Beta-APK bauen** (nach dem ersten Datenbau):
    ```bash
-   KJ_DATA_URL=https://daten.kurvenjaeger.de/v1/ npm run release:apk
+   npm run release:apk
    ```
+   (Daten und Website zeigen automatisch auf `https://kurvenjagd.oli-tech.eu/`.)
 4. ⬜ Als **Vorabversion auf GitHub** veröffentlichen:
    ```bash
-   gh release create v0.1.0-beta dist/Kurvenjaeger-0.1.0.apk --prerelease --title "Kurvenjäger 0.1.0 Beta (Baden-Württemberg)"
+   gh release create v0.1.0-beta dist/Kurvenjagd-0.1.0.apk --prerelease --title "Kurvenjagd 0.1.0 Beta (Baden-Württemberg)"
    ```
 
 ### 6. Google Play (geschlossener Test)
@@ -94,7 +85,7 @@ Kosten, Nutzungsgrenzen und Schwellen: [abhaengigkeiten-und-grenzen.md](abhaengi
 2. ⬜ App anlegen, **Play App Signing** aktivieren (Standard): Google verwaltet den App-Schlüssel, dein Schlüssel aus Schritt 5 dient nur zum Hochladen und lässt sich bei Verlust zurücksetzen.
 3. ⬜ AAB bauen und im **geschlossenen Test** hochladen:
    ```bash
-   KJ_DATA_URL=https://daten.kurvenjaeger.de/v1/ npm run release:aab
+   npm run release:aab
    ```
    Neue private Konten müssen vor der Veröffentlichung einen geschlossenen Test mit einer Mindestzahl an Testern über mehrere Tage durchlaufen (zuletzt 12 Tester, 14 Tage) – aktuelle Vorgabe in der Play Console prüfen.
 4. ⬜ Store-Eintrag: Kurzbeschreibung, Bildschirmfotos ([docs/bilder/](bilder/)), Link zur Datenschutzerklärung, Fragebogen „Datensicherheit“ (keine Datenerhebung durch die App; Standort/Audio werden nicht an uns übertragen – Spracherkennung über Google angeben).

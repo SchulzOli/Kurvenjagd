@@ -1,6 +1,6 @@
 # Mitmachen
 
-Schön, dass du helfen willst! Kurvenjäger ist ein Freizeitprojekt: kostenlos für alle, ohne Werbung und ohne bezahlte Funktionen. Jede Hilfe zählt – Fehlerberichte, Ideen, Code, Tests auf echten Touren oder Übersetzungen.
+Schön, dass du helfen willst! Kurvenjagd ist ein Freizeitprojekt: kostenlos für alle, ohne Werbung und ohne bezahlte Funktionen. Jede Hilfe zählt – Fehlerberichte, Ideen, Code, Tests auf echten Touren oder Übersetzungen.
 
 ## Fehler melden und Ideen einbringen
 

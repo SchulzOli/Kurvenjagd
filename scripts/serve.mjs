@@ -41,4 +41,4 @@ createServer((req, res) => {
   res.writeHead(200, { ...headers, 'Content-Length': st.size });
   if (req.method === 'HEAD') return res.end();
   createReadStream(file).pipe(res);
-}).listen(port, () => console.log(`Kurvenjäger-Testserver: http://localhost:${port} (Daten aus data/)`));
+}).listen(port, () => console.log(`Kurvenjagd-Testserver: http://localhost:${port} (Daten aus data/)`));

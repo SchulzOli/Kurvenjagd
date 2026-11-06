@@ -1,6 +1,6 @@
 {
-  "appId": "de.kurvenjaeger.app",
-  "appName": "Kurvenjäger",
+  "appId": "de.kurvenjagd.app",
+  "appName": "Kurvenjagd",
   "webDir": "www",
   "backgroundColor": "#0a0a0b"
 }

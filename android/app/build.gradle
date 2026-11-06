@@ -13,10 +13,10 @@ def ks = { key, envName -> ksProps.getProperty(key) ?: System.getenv(envName) }
 def hasKeystore = ks('storeFile', 'KJ_KEYSTORE') != null
 
 android {
-    namespace = "de.kurvenjaeger.app"
+    namespace = "de.kurvenjagd.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "de.kurvenjaeger.app"
+        applicationId "de.kurvenjagd.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode ver[0] * 10000 + ver[1] * 100 + ver[2]

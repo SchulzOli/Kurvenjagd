@@ -8,7 +8,7 @@ import { existsSync } from 'node:fs';
 import { env, adb, emulator } from './android-env.mjs';
 
 const AVD = 'Kurvenjaeger';
-const APP = 'de.kurvenjaeger.app';
+const APP = 'de.kurvenjagd.app';
 const START = ['7.85', '47.99']; // GPS-Position im Emulator: Freiburg (Länge, Breite)
 
 const sh = (file, args) => execFileSync(file, args, { env, encoding: 'utf8' }).trim();
@@ -34,6 +34,6 @@ if (testData) {
   sh(adb, ['reverse', `tcp:${DATA_PORT}`, `tcp:${DATA_PORT}`]);
   console.log(`Testdaten: Emulator lädt von http://127.0.0.1:${DATA_PORT}/data/ (Testserver muss laufen: node scripts/serve.mjs)`);
 }
-console.log(sh(adb, ['install', '-r', 'dist/Kurvenjaeger-debug.apk']));
+console.log(sh(adb, ['install', '-r', 'dist/Kurvenjagd-debug.apk']));
 sh(adb, ['shell', 'am', 'start', '-n', `${APP}/.MainActivity`]);
 console.log('App gestartet. Debuggen: chrome://inspect in Chrome am PC.');

@@ -1,4 +1,4 @@
-// „Über Kurvenjäger“: Version, Datenschutz in Kürze, Datenquellen und Lizenzen, Links zu Datenschutzerklärung,
+// „Über Kurvenjagd“: Version, Datenschutz in Kürze, Datenquellen und Lizenzen, Links zu Datenschutzerklärung,
 // Impressum und Quellcode. Pflicht für die Stores (Datenschutz-Link) und für die Lizenzen (OSM, CC BY …).
 import { Capacitor } from '@capacitor/core';
 import { CONFIG } from './config.js';

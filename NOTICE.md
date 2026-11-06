@@ -1,6 +1,6 @@
 # Lizenzen und Quellenangaben
 
-## Kurvenjäger
+## Kurvenjagd
 
 Copyright © 2026 SchulzOli und die Mitwirkenden des Projekts.
 

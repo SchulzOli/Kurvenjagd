@@ -13,7 +13,7 @@ const TAGS = ['highway', 'name', 'ref', 'oneway', 'junction', ...FEATURE_TAGS];
 let dbPromise;
 function db() {
   return dbPromise ||= new Promise((resolve, reject) => {
-    const req = indexedDB.open('kurvenjaeger', 1);
+    const req = indexedDB.open('kurvenjagd', 1);
     req.onupgradeneeded = () => req.result.createObjectStore('kv');
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);

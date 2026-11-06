@@ -1,6 +1,5 @@
-# Veröffentlicht die Website (Ordner site/: Start, Datenschutz, Impressum) auf GitHub Pages.
-# Einmalig: Settings → Pages → Source: „GitHub Actions“. Adresse: https://schulzoli.github.io/Kurvenjagd/
-# (später eigene Domain: Settings → Pages → Custom domain, dann KJ_SITE_URL beim Bauen der App setzen)
+# Lädt die Website (Ordner site/: Start, Datenschutz, Impressum) auf den eigenen Server:
+# https://kurvenjagd.oli-tech.eu/ (Einrichtung und Secrets: server/README.md)
 name: Website
 
 on:
@@ -9,25 +8,19 @@ on:
     paths: ['site/**']
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  deploy:
+  hochladen:
+    if: vars.SERVER_AKTIV == 'true'
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Hochladen (rsync)
+        env:
+          SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
+          ZIEL: ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/kurvenjagd && chmod 600 ~/.ssh/kurvenjagd
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          rsync -a --delete -e "ssh -i $HOME/.ssh/kurvenjagd -o BatchMode=yes" site/ "$ZIEL:site/"

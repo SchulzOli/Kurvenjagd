@@ -8,7 +8,7 @@ Vor dem Absenden Name, Repository-Link und geschätzte Nutzerzahl eintragen.
 
 Hello Open-Meteo team,
 
-I'm developing **Kurvenjäger**, a free and open-source app (Android, iOS, web) that plans curvy motorcycle routes from OpenStreetMap data. It has no ads, no paid features, and no accounts. Users can make voluntary "pay what you want" donations, which only cover running costs (data hosting, developer accounts).
+I'm developing **Kurvenjagd**, a free and open-source app (Android, iOS, web) that plans curvy motorcycle routes from OpenStreetMap data. It has no ads, no paid features, and no accounts. Users can make voluntary "pay what you want" donations, which only cover running costs (data hosting, developer accounts).
 
 The app shows the weather along a planned route for the chosen departure time. Usage per user is small:
 

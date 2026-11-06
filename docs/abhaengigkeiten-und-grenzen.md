@@ -1,6 +1,6 @@
 # Abhängigkeiten, Nutzungsgrenzen und Kosten
 
-Alles, wovon Kurvenjäger abhängt: was du wie stark nutzen darfst, ab wann du es selbst betreiben solltest und was das ungefähr kostet. Stand: Oktober 2026. Preise und Regeln ändern sich – vor dem Start bei den Anbietern prüfen (Links unten). Keine Rechtsberatung.
+Alles, wovon Kurvenjagd abhängt: was du wie stark nutzen darfst, ab wann du es selbst betreiben solltest und was das ungefähr kostet. Stand: Oktober 2026. Preise und Regeln ändern sich – vor dem Start bei den Anbietern prüfen (Links unten). Keine Rechtsberatung.
 
 **Annahme für alle Rechnungen:** Ein aktiver Nutzer plant im Monat ~4 Touren und fährt ~2. Das ergibt je Nutzer und Monat etwa 1.200 Dateiabrufe (Kartenkacheln + Straßenpakete), ~6 Wetter-Abfragen und ~20–100 Ortssuchen (Tippen in der Suche, Ortsnamen der Punkte).
 
@@ -13,7 +13,7 @@ Alles, wovon Kurvenjäger abhängt: was du wie stark nutzen darfst, ab wann du e
 | **Photon** von komoot (`photon.komoot.io`) | Ortssuche, Ortsnamen der Punkte, „Zwischenstopp in …“ | Kostenlos „solange die Zahl der Anfragen in einem vernünftigen Rahmen bleibt“; starke Nutzung wird gedrosselt oder gesperrt. **Keine feste Zahl.** | Ab ca. **5.000 aktiven Nutzern** (≈ 100.000–500.000 Anfragen/Monat) oder sobald komoot drosselt | Eigene Photon-Instanz nur für D-A-CH: Server mit 16 GB RAM, **ca. 20–25 €/Monat** (Hetzner o. ä.); ab ~50.000 Nutzern größer, ca. 40 € |
 | **Open-Meteo** (`api.open-meteo.com`) | Wetter entlang der Route | Kostenlos **nur nicht-kommerziell**, ohne Schlüssel, unter **10.000 Anfragen/Tag, 5.000/Stunde, 600/Minute**; Nennung „Open-Meteo“ (CC BY 4.0). Ob eine App mit freiwilligen Spenden „nicht-kommerziell“ ist, ist offen → [Anfrage-Entwurf](anfrage-open-meteo.md) | Sofort, falls Open-Meteo die Spenden als kommerziell wertet; sonst ab ~**50.000 Nutzern** (≈ 10.000 Anfragen/Tag) | Bezahlter Tarif: kleine Tarife ab wenigen Euro bis ca. 30 €/Monat (Angaben widersprüchlich, auf der Preisseite prüfen). Selbst betreiben (Open Source, Docker) möglich, aber aufwendig – lieber bezahlen |
 | **AWS Terrain Tiles** (`s3.amazonaws.com/elevation-tiles-prod`) | Höhenmodell: Höhenmeter, Steigung, Geländeschattierung | Öffentlicher Datensatz im Open-Data-Programm von AWS; Amazon trägt die Kosten, **kein Konto, keine Grenze genannt**. Zitierpflicht: „Terrain Tiles … from registry.opendata.aws/terrain-tiles“, Quellen der Höhendaten nennen. Keine Verfügbarkeitsgarantie | Nur falls AWS den Datensatz einstellt oder er unzuverlässig wird | D-A-CH-Kacheln Zoom 11/12 (~2 GB) einmalig in den eigenen Speicher kopieren: **praktisch 0 €** |
-| **Eigener Datenspeicher** (z. B. Cloudflare R2) | Straßenpakete und Vektorkarte (gemessen: BW 0,53 GB, D-A-CH ≈ 5,7 GB bis Zoom 14) | Dein eigener Dienst. R2 kostenlos bis **10 GB Speicher, 10 Mio. Lesezugriffe und 1 Mio. Schreibzugriffe im Monat**, kein Entgelt für Datenabfluss; darüber 0,015 $/GB und 0,36 $ je Mio. Lesezugriffe | – (ist schon selbst betrieben) | Siehe Abschnitt 6: 0 € bis ca. 50 €/Monat je nach Nutzerzahl |
+| **Eigener Server** (Hetzner Cloud, `kurvenjagd.oli-tech.eu`) | Website, Straßenpakete und Vektorkarte (gemessen: BW 0,53 GB, D-A-CH ≈ 5,7 GB bis Zoom 14; beim Umschalten kurz doppelt) | Dein eigener Dienst. **20 TB Traffic/Monat inklusive** (≈ 18 MB je Nutzer und Monat → reicht für sehr viele Nutzer) | – (ist schon selbst betrieben) | vorhandener Server: 0 € extra; eigener Server nur dafür ca. 5,50 €/Monat |
 | **Spracherkennung** (Android: Google-Spracherkennung; Browser: Web Speech API) | Sprachbefehle | Systemfunktion, kostenlos, keine Grenze. **Datenschutz:** Die Sprachaufnahme geht dabei meist an Google → in der Datenschutzerklärung nennen | – | – |
 | **Sprachausgabe** (Sprach-Engine des Geräts) | Ansagen | Systemfunktion, offline, kostenlos | – | – |
 
@@ -32,8 +32,8 @@ Alles, wovon Kurvenjäger abhängt: was du wie stark nutzen darfst, ab wann du e
 | Was | Wofür | Bedingungen | Kosten |
 |---|---|---|---|
 | **GitHub** (Repository, Issues) | Code, Mitwirkende, Fehlerberichte | Kostenlos für öffentliche Projekte | 0 € |
-| **GitHub Pages** oder Cloudflare Pages | Website mit Datenschutzerklärung, Impressum, Spenden-Link, optional Web-App | Pages: max. 1 GB, weiche Grenze 100 GB Verkehr/Monat – reicht für eine Website locker | 0 € |
-| **Domain** (z. B. `kurvenjaeger.de`) | Datenspeicher und Website unter eigenem Namen | vorher Markenregister prüfen | ca. 10–15 €/Jahr |
+| **Website** auf dem eigenen Server | Datenschutzerklärung, Impressum, Spenden-Link, optional Web-App | per Workflow aus `site/` hochgeladen | 0 € |
+| **Domain** `oli-tech.eu` mit Subdomain `kurvenjagd` | Website und Daten unter eigenem Namen | vorhanden | 0 € extra |
 | **Google Play** | Android-Store | Einmalige Registrierung; In-App-Käufe (Trinkgeld) müssen über Google laufen, **15 % Gebühr** bis 1 Mio. $ Umsatz/Jahr; externe Spenden-Links riskieren die Entfernung | **25 $ einmalig** |
 | **Apple Developer Program** | App Store (iOS) | Pflicht für iOS; Trinkgeld nur per In-App-Kauf, **15 %** im Small Business Program (muss man beantragen) | **99 $/Jahr** (~7,50 €/Monat) |
 | **F-Droid** | Open-Source-Store für Android | Kostenlos; **nur freie Software**: Die Version für F-Droid darf `cordova-plugin-purchase` nicht enthalten (es bringt Googles unfreie Billing-Bibliothek mit) → eigene Build-Variante ohne In-App-Kauf, Spenden dort per Link (`KJ_CHANNEL=fdroid`) | 0 € |
@@ -67,19 +67,20 @@ Alle frei nutzbar, **ohne Nutzungsgrenzen und ohne Kosten**. Pflicht ist nur, di
 
 Monatlich, gerundet; „Wetter“ nur falls Open-Meteo einen bezahlten Tarif verlangt. Ausführliche Herleitung und Spendenziel: [finanzierung-und-betrieb.md](finanzierung-und-betrieb.md).
 
-| Aktive Nutzer | Konten + Domain | Datenspeicher | Ortssuche | **Summe** | + Wetter-Tarif |
+| Aktive Nutzer | Apple (ab iOS) | Server (vorhanden) | Ortssuche | **Summe** | + Wetter-Tarif |
 |---:|---:|---:|---:|---:|---:|
-| 1.000 | 9 € | 0 € | 0 € (komoot) | **9 €** | ~38 € |
-| 5.000 | 9 € | ~5 € | 0 € (komoot, Grenzbereich) | **14 €** | ~43 € |
-| 10.000 | 9 € | ~5 € | ~20 € (eigene Instanz) | **34 €** | ~63 € |
-| 50.000 | 9 € | ~20 € | ~20 € | **50 €** | ~79 € |
-| 100.000 | 9 € | ~42 € | ~40 € | **91 €** | ~120 € |
+| Beta, nur Android | – | 0 € | 0 € (komoot) | **0 €** | ~30 € |
+| 1.000 | 7,50 € | 0 € | 0 € (komoot) | **7,50 €** | ~37 € |
+| 5.000 | 7,50 € | 0 € | 0 € (komoot, Grenzbereich) | **7,50 €** | ~37 € |
+| 10.000 | 7,50 € | 0 € | ~20 € (eigene Instanz) | **27,50 €** | ~57 € |
+| 50.000 | 7,50 € | 0 € (≈ 0,9 TB) | ~20 € | **27,50 €** | ~57 € |
+| 100.000 | 7,50 € | 0 € (≈ 1,8 TB) | ~40 € | **47,50 €** | ~77 € |
 
-Einmalig: Google Play 25 $. Nicht enthalten: Arbeitszeit, Steuerberatung.
+Ein eigener Server nur für Kurvenjagd statt des vorhandenen: ca. 5,50 €/Monat mehr. Einmalig: Google Play 25 $. Nicht enthalten: Arbeitszeit, Steuerberatung.
 
 ## 7. Was vor dem Veröffentlichen noch zu tun ist
 
-1. Cloudflare R2 + Domain einrichten, Secrets und `DATEN_AKTIV=true` im Repo setzen, ersten Datenbau laufen lassen.
+1. Server nach [server/README.md](../server/README.md) einrichten, Secrets und `SERVER_AKTIV=true` im Repo setzen, ersten Datenbau laufen lassen.
 2. Open-Meteo anfragen.
 3. Website mit **Datenschutzerklärung** (nennt Photon, Open-Meteo, AWS, eigenen Speicher, Google-Spracherkennung, Stores) und **Impressum**.
 4. Markenrecherche zum Namen (DPMA, EUIPO).
@@ -90,7 +91,7 @@ Einmalig: Google Play 25 $. Nicht enthalten: Arbeitszeit, Steuerberatung.
 - Photon: <https://github.com/komoot/photon>
 - Open-Meteo Bedingungen und Preise: <https://open-meteo.com/en/terms>, <https://open-meteo.com/en/pricing>
 - AWS Terrain Tiles: <https://registry.opendata.aws/terrain-tiles/>
-- Cloudflare R2 Preise: <https://developers.cloudflare.com/r2/pricing>
+- Hetzner Cloud (Traffic, Preise): <https://www.hetzner.com/cloud>
 - Geofabrik zu verantwortungsvollem Herunterladen: <https://blog.geofabrik.de/index.php/2025/09/10/download-responsibly/>
 - Protomaps Downloads: <https://docs.protomaps.com/basemaps/downloads>
 - GitHub Actions Grenzen und Abrechnung: <https://docs.github.com/en/actions/reference/limits>, <https://docs.github.com/actions/learn-github-actions/usage-limits-billing-and-administration>

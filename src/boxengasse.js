@@ -1,6 +1,6 @@
 // Boxengasse: verstecktes Technik-Fenster.
 // Für Fahrer Infotainment („wie kommt meine Route zustande?“), für uns Telemetrie, Debugging und Parameter-Labor.
-// Freischalten: 7× schnell auf das Logo „Kurvenjäger“ tippen, Sprachbefehl „Boxengasse“ oder URL-Parameter ?boxengasse.
+// Freischalten: 7× schnell auf das Logo „Kurvenjagd“ tippen, Sprachbefehl „Boxengasse“ oder URL-Parameter ?boxengasse.
 import { Capacitor } from '@capacitor/core';
 import * as R from './router.js';
 import { events, services, counters } from './telemetry.js';

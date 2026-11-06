@@ -4,8 +4,8 @@
 // Entwicklung (npm run build): Straßenpakete und Karte aus data/ (python scripts/build_data.py,
 //   node scripts/build-map.mjs), ausgeliefert von scripts/serve.mjs unter /data/. Fehlen sie, fällt die App
 //   auf die öffentlichen Overpass-Server zurück. Android-Emulator: KJ_DATA_URL=http://127.0.0.1:8765/data/.
-// Veröffentlichung (npm run build -- --release): KJ_DATA_URL zeigt auf den eigenen Speicher (CDN),
-//   Overpass wird nie benutzt.
+// Veröffentlichung (npm run build -- --release): Daten und Website vom eigenen Server
+//   https://kurvenjagd.oli-tech.eu/ (server/README.md), Overpass wird nie benutzt.
 /* global process */
 const env = {
   data: process.env.KJ_DATA_URL,
@@ -33,6 +33,6 @@ export const CONFIG = {
   // Vertriebsweg: 'web' und 'fdroid' zeigen Spenden-Links; 'store' (Google Play, App Store) ausschließlich
   // Trinkgeld per In-App-Kauf – externe Spenden-Links sind dort nicht erlaubt. Ohne Angabe: nativ 'store', sonst 'web'.
   channel: env.channel || null,
-  // Website mit Datenschutzerklärung und Impressum (später eigene Domain)
-  siteUrl: slash(env.site || 'https://schulzoli.github.io/Kurvenjagd/'),
+  // Website mit Datenschutzerklärung und Impressum
+  siteUrl: slash(env.site || 'https://kurvenjagd.oli-tech.eu/'),
 };

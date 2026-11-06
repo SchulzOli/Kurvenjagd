@@ -1,4 +1,4 @@
-"""Baut die Straßenpakete für Kurvenjäger aus einem OSM-Auszug (z. B. Geofabrik dach-latest.osm.pbf).
+"""Baut die Straßenpakete für Kurvenjagd aus einem OSM-Auszug (z. B. Geofabrik dach-latest.osm.pbf).
 
 Ersetzt zur Laufzeit die öffentlichen Overpass-Server: Die App lädt statt einer Abfrage fertige
 Dateien je 0,1°-Kachel von einem Speicher mit CDN (oder aus dem Ordner www/data beim Entwickeln).

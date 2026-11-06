@@ -269,7 +269,7 @@ export async function loadArea(bbox, focus, onProgress) {
     }
     const inUncovered = ([lat, lon]) => uncovered.some(([i, j]) => Math.floor(lat / TILE) === i && Math.floor(lon / TILE) === j);
     if (uncovered.length && !CONFIG.overpassFallback && focus.some(inUncovered)) {
-      throw new Error(`Dieses Gebiet ist (noch) nicht abgedeckt. Kurvenjäger hat Straßendaten für ${pkg.manifest.region || 'Deutschland, Österreich und die Schweiz'}.`);
+      throw new Error(`Dieses Gebiet ist (noch) nicht abgedeckt. Kurvenjagd hat Straßendaten für ${pkg.manifest.region || 'Deutschland, Österreich und die Schweiz'}.`);
     }
     let bytes = 0;
     const t1 = performance.now();
